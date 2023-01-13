@@ -115,17 +115,19 @@ let ChatGateway = class ChatGateway {
     }
     async handleConnection(client) {
         const user = await this.getUserFromSocket(client);
-        console.log("client has connected  " + user.username);
-        this.userSocketMap.push(new userSocket(user.username, client));
-        let notif = new notification();
-        var sentpayload = {
-            notification: {},
-            payload: null,
-        };
-        notif.setStatusContent('Name Has Been Changed Successfully');
-        notif.setStatus(NOTIF_STATUS.SUCCESS);
-        sentpayload.notification = notif.getNotification();
-        client.emit('connection', sentpayload);
+        if (user) {
+            console.log("client has connected  " + user.username);
+            this.userSocketMap.push(new userSocket(user.username, client));
+            let notif = new notification();
+            var sentpayload = {
+                notification: {},
+                payload: null,
+            };
+            notif.setStatusContent('Name Has Been Changed Successfully');
+            notif.setStatus(NOTIF_STATUS.SUCCESS);
+            sentpayload.notification = notif.getNotification();
+            client.emit('connection', sentpayload);
+        }
     }
     handleDisconnect(client) {
         console.log("client has disconnected ");

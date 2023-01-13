@@ -10,6 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDto } from 'src/user/dto';
 import { ModeGame, StatusGame, UserStatus } from '@prisma/client';
 
+
+userinho: new Map<string, number>();
+
 interface player_properties 
 {
   input:  string;
@@ -51,6 +54,7 @@ interface Game
 
   state: string;
   players: Array<string>;
+  users: Array<string>;
   players_avatar : Array<string>;
   players_names : Array<string>;
   spects: Array<string>;
@@ -65,6 +69,8 @@ interface Game
 
    prisma: PrismaService;
    user_Service: UserService;
+
+   user_with_game_id: Map<string, number>;
 }
 
 interface GameState {
@@ -121,7 +127,7 @@ class Game {
     this.aspectRatio = 2 ;
   
     this.ball_radius = 10;
-    this.ball_speed = 0.25;
+    this.ball_speed = 2.25;
 
     this.paddle_width = 10;
     this.paddle_height = 100;
@@ -140,6 +146,7 @@ class Game {
 
     this.state = "waiting";
     this.players = [];
+    this.users = [];
     this.players_avatar = [];
     this.players_names = [];
 
@@ -150,9 +157,9 @@ class Game {
     this.winner = "";
     this.lastscored = "";
     this.numgames = 0;
+    this.user_with_game_id = new Map<string, number>();
 
-
-     this.prisma = new PrismaService(new ConfigService);
+     //this.prisma = new PrismaService(new ConfigService);
      this.user_Service = new UserService(this.prisma, new ConfigService);
     
   }
@@ -201,6 +208,14 @@ class Game {
     }
   }
 
+  push_users(player: string)
+  {
+    if (this.users.length < 2)
+    {
+        this.users.push(player);  
+    }
+  }
+
   remove_player()
   {
     this.players.pop();
@@ -239,7 +254,8 @@ class Game {
     game.ball_properties();
     game.ball_collision_with_screen();
     game.ball_collision_with_paddles();
-    game.updateScore();
+    game.updateScore(game);
+    
     game.server.to(game.room).emit("queue_status", game.queue_status());
   }
 
@@ -264,12 +280,16 @@ class Game {
   }
 
 
-  updateScore()
+  async updateScore(game: Game)
   {
     if(this.ball_x > this.sec_paddle_x)
     {
         this.scores[0]++;
         console.log("scored1");
+        
+
+
+
         this.update_status("scored");
         console.log("players are "+this.players.length)
         this.lastscored = this.players[0];
@@ -436,6 +456,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   private cpt: number = 0;
   private socket_with_queue_id: Map<string, number> = new Map<string, number>();
   private user_with_queue_id: Map<string, number> = new Map<string, number>();
+  private user_with_game_id: Map<string, number> = new Map<string, number>();
+
 
   afterInit(server: Server) {
     this.server = server;
@@ -536,9 +558,71 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   @SubscribeMessage('GameEnded')
-  GameEnded(socket: Socket): void
+  async GameEnded(socket: Socket)
   {
    // console.log("GAME ENDED INDEEEEED" + socket.id);
+    const user = await this.getUserFromSocket(socket);
+    const user_id: number = this.user_with_queue_id.get(user.id);
+    if (user)
+    {
+        const gameox = await this.prismaService.game.findUnique({
+          where: { id: this.user_with_game_id.get(this.queues[this.queues.length - 1].users[0])} 
+        });
+        if (gameox.status !== StatusGame.FINISHED)
+        {
+          const updatedGame = await this.prismaService.game.update({
+            where: { id: this.user_with_game_id.get(this.queues[this.queues.length - 1].users[0])},
+            data: { user1_score: this.queues[this.queues.length - 1].scores[0]
+              , user2_score: this.queues[this.queues.length - 1].scores[1],
+              status: StatusGame.FINISHED,}
+          });
+          const user1 = await this.prismaService.user.findUnique({
+            where: {id: this.queues[this.queues.length - 1].users[0] }
+          });
+          const user2 = await this.prismaService.user.findUnique({
+            where: {id: this.queues[this.queues.length - 1].users[1] }
+          });
+          
+          if (this.queues[this.queues.length - 1].scores[0] === 2)
+          {
+              await this.prismaService.user.update({
+                where: {id: user1.id },
+                data: {
+                    win: user1.win + 1,
+                    win_streak: user1.win_streak + 1,
+                }
+              });
+  
+              await this.prismaService.user.update({
+                where: {id: user2.id },
+                data: {
+                    lose: user2.lose + 1,
+                    win_streak: 0,
+                }
+              });
+          } 
+          else if (this.queues[this.queues.length - 1].scores[1] === 2)
+          {
+              await this.prismaService.user.update({
+                where: {id: user2.id },
+                data: {
+                    win: user2.win + 1,
+                    win_streak: user2.win_streak + 1,
+                }
+              });
+  
+              await this.prismaService.user.update({
+                where: {id: user1.id },
+                data: {
+                    lose: user1.lose + 1,
+                    win_streak: 0,
+                }
+              });
+          }
+          this.queues[this.queues.length - 1].scores[0] = 0;
+          this.queues[this.queues.length - 1].scores[1] = 0;
+        }
+    }
   }
   async edit_user_status(user_id : string, status : UserStatus){
     await this.prismaService.user.update({
@@ -548,18 +632,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         }
       });
   }
-
-
-  // async create_game(user_id : string, status : UserStatus){
-  //   await this.prismaService.game.create({
-  //     data: {
-  //       user1_id: user_id,
-  //       user2_id: user_id,
-  //       mode: ModeGame.MODE1,
-  //       status: StatusGame.PLAYING,
-  //     }
-  //   });
-  // }
 
 
 async get_user_status(user_id : string){
@@ -573,6 +645,7 @@ async get_user_status(user_id : string){
   @SubscribeMessage('player_join_queue')
   async joinRoom(socket: Socket) 
   {
+    //const game : any;
     const user = await this.getUserFromSocket(socket);
     const user_status : UserStatus = "INQUEUE";
     const game_status : UserStatus = "INGAME";
@@ -585,18 +658,7 @@ async get_user_status(user_id : string){
       {
         console.log("Here  "+user.username);
         await this.edit_user_status(user.id, user_status);
-        //console.log("Hola " + user.status);
-        // this.edit_user_status(user.id, UserStatus.INQUEUE);
-        // console.log("Hola2 " + user.status);
-        // console.log(socket.handshake.headers);
-        // console.log("here");
         this.getUserFromSocket(socket);
-        
-        
-        //const user = this.queues[0].prisma.user;
-        //const user = this.user_serv.get_user(req.user_ob);
-        
-        //console.log("3chiiiri "+this.queues[0].prisma);
         
         if (this.queues.length === 0)
         {
@@ -616,9 +678,34 @@ async get_user_status(user_id : string){
           this.cpt++;
         }       
         this.queues[this.queues.length - 1].push_player(socket.id, user.avatar, user.username);
+        this.queues[this.queues.length - 1].push_users(user.id);
         this.queues[this.queues.length - 1].check_players_are_ready();
         this.socket_with_queue_id.set(socket.id, this.queues.length - 1);
+        
         this.user_with_queue_id.set(user.id, this.queues.length - 1);
+        if (this.queues[this.queues.length - 1].users.length === 2)
+        {
+          console.log("These are the number of users to this queue "+ 
+          this.queues[this.queues.length - 1].users[0],
+          this.queues[this.queues.length - 1].users[1]
+          );
+
+          const game = await this.prismaService.game.create({
+            data: {
+              user1: { connect: { id: this.queues[this.queues.length - 1].users[0] } },
+              user2: { connect: { id: this.queues[this.queues.length - 1].users[1] } },
+              mode: ModeGame.MODE1,
+              status: StatusGame.PLAYING,
+            }
+          });
+          this.user_with_game_id.set(this.queues[this.queues.length - 1].users[0], game.id);
+          this.user_with_game_id.set(this.queues[this.queues.length - 1].users[1], game.id);
+          console.log("Now that iv created the game id :"+ game.id);
+          console.log("Now that iv created the game id :"+ this.user_with_game_id.get(this.queues[this.queues.length - 1].users[0]));
+          console.log("THe players on it are "+ game.user1_id + game.user2_id);
+          this.queues[this.queues.length - 1].user_with_game_id = this.user_with_game_id;
+        }
+
       }
       else 
       {
@@ -637,8 +724,19 @@ async get_user_status(user_id : string){
 
     const user = await this.getUserFromSocket(player_ref);
     const user_id: number = this.user_with_queue_id.get(user.id);
+    if (payload.input === "ENTER")
+    {
+      if (user)
+      {
+          const updatedGame = await this.prismaService.game.update({
+            where: { id: this.user_with_game_id.get(this.queues[this.queues.length - 1].users[0])},
+            data: { user1_score: this.queues[this.queues.length - 1].scores[0]
+              , user2_score: this.queues[this.queues.length - 1].scores[1]}
+          });        
+      }
 
-    console.log("Hahwa user id o hahwa socket id " +user_id+"|"+player_id);
+    }
+    //console.log("Hahwa user id o hahwa socket id " +user_id+"|"+player_id);
     
     this.queues[user_id].player_activity({ ...payload, id: player_ref.id })
   }

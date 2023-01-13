@@ -18,6 +18,7 @@ import Chat from './components/Chat';
 import ProfileUp from './pages/ok';
 import Main_chat from './components/main_chat';
 import { ChatContext } from './Contexts/ChatContext';
+import Nono from './components/message';
 
 
 
@@ -35,6 +36,7 @@ function App() {
         <Route path='/chat' element={<Chat/>} />
         <Route path='/profile' element={<ProfileUp/>} />
         <Route path='/main_chat' element={<Main_chat/>} />
+        <Route path='/nono' element={<Nono/>} />
       </Routes>
   </BrowserRouter>)
 

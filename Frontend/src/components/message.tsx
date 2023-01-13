@@ -17,6 +17,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BackGround from '../pages/background.jpg'
 import Sidebar from './Sidebar'
 
+
   
   // await axios.get( process.env.REACT_APP_BACKEND_URL+ "/chat/myChannels", 
   // {withCredentials: true} 
@@ -33,7 +34,7 @@ import Sidebar from './Sidebar'
   //}
 
 
-const SketchPong = () => {
+const Nono = () => {
 
   const socket = useRef(null as null | Socket);
   const gameState = useRef(null as null | GameState);
@@ -134,7 +135,7 @@ const SketchPong = () => {
 
 
   const setup_2 = (p5: p5Types,canvasParentRef: Element) => {
-    p5.createCanvas(window.innerWidth/4 , (window.innerWidth / 8)).parent(canvasParentRef)
+    p5.createCanvas(window.innerWidth/4 , (window.innerHeight / 4)).parent(canvasParentRef)
 
     p5.background(70);
 
@@ -142,7 +143,7 @@ const SketchPong = () => {
 
   function draw_2(p5: p5Types)
   {
-    p5.resizeCanvas(window.innerWidth/2 , (window.innerWidth / 8))
+    p5.resizeCanvas(window.innerWidth/2 , (window.innerHeight / 2))
 
     p5.background(70);
     function getWindowSize() {
@@ -194,64 +195,69 @@ const SketchPong = () => {
   }
 
   function User_avatar_one() {
-    if (gameState.current != null)
-      setUserone(gameState.current.players_avatar[0]);
+    // if (gameState.current != null)
+    //   setUserone(gameState.current.players_avatar[0]);
     
-    const imageLink = user_one;
+    //  //console.log("heres my image"+ user_one);
+    // const imageLink = user_one;
   
     return (
       
-        <img className="rounded-full" src={imageLink} alt="description of image" />
+        <img className=" rounded-full " src="https://cdn.intra.42.fr/users/51fa2b3dd4bbd929c961832c888c83a2/fstitou.jpg" alt="description of image" />
       
     );
   }
 
   function User_avatar_two() {
-    if (gameState.current != null)
-      setUsertwo(gameState.current.players_avatar[1]);
+    // if (gameState.current != null)
+    //   setUsertwo(gameState.current.players_avatar[1]);
     
-    const imageLink = user_two;
+    //  //console.log("heres my image"+ user_one);
+    // const imageLink = user_two;
   
     return (
-        <img className="rounded-full" src={imageLink} alt="description of image" />
+        <img className=" rounded-full" src="https://cdn.intra.42.fr/users/51fa2b3dd4bbd929c961832c888c83a2/fstitou.jpg" alt="description of image" />
     );
   }
 
   function Show_users_props() {
-    if (gameState.current != null)
-    {
-      setUserone_score(gameState.current.scores[0]);
-      setUsertwo_score(gameState.current.scores[1]);
+    // if (gameState.current != null)
+    // {
+    //   setUserone_score(gameState.current.scores[0]);
+    //   setUsertwo_score(gameState.current.scores[1]);
 
-      setUserone_name(gameState.current.players_names[0]);
-      setUsertwo_name(gameState.current.players_names[1]);
+    //   setUserone_name(gameState.current.players_names[0]);
+    //   setUsertwo_name(gameState.current.players_names[1]);
 
 
-    }
-    const user_fr_score = user_one_score;
-    const user_sec_score = user_two_score;
+    // }
+      
+    
+     //console.log("heres my image"+ user_one);
+    // const user_fr_score = user_one_score;
+    // const user_sec_score = user_two_score;
 
-    const user_fr_name = user_one_name;
-    const user_sec_name = user_two_name;
+    // const user_fr_name = user_one_name;
+    // const user_sec_name = user_two_name; ..
   
     return (
-      <div className="flex flex-row justify-between items-center bg-transparent py-1 my-4 w-2/4 bg-[#262626] hover:bg-mine-450 h-1/6 rounded-full ">
-      <div className="flex w-2/12  justify-around h-5/6 sm:h-3/6 md:h-5/6">
-        <User_avatar_one />
-      </div>
-      <div className="flex w-2/12 sm:text-sm lg:text-2xl text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg ">
-      {user_fr_name}
-      </div>
-      <div className="flex  w-2/12 lg:text-3xl sm:text-base text-mine-540 items-center justify-center">
-      {user_fr_score} - {user_sec_score}
-      </div>
-      <div className="flex  w-2/12 sm:text-sm lg:text-2xl text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg">
-      {user_sec_name}
-      </div>
-      <div className="flex justify-between align-end w-2/12 sm:h-3/6 md:h-5/6  ">
-        <User_avatar_two />
-      </div>
-      </div>
+        <div className="flex flex-row justify-between items-center bg-transparent py-1 my-4 w-2/4 bg-[#262626] hover:bg-mine-450 h-1/6 rounded-full ">
+        <div className="flex w-2/12  justify-around h-5/6 sm:h-3/6 md:h-5/6">
+          <User_avatar_one />
+        </div>
+        <div className="flex w-2/12 sm:text-sm lg:text-2xl text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg ">
+          Aelbagh
+        </div>
+        <div className="flex  w-2/12 lg:text-3xl sm:text-base text-mine-540 items-center justify-center">
+        1 - 0
+        </div>
+        <div className="flex  w-2/12 sm:text-sm lg:text-2xl text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg">
+          aainhaja
+        </div>
+        <div className="flex justify-between align-end w-2/12 sm:h-3/6 md:h-5/6  ">
+          <User_avatar_two />
+        </div>
+        </div>
     );
   }
 
@@ -263,17 +269,11 @@ const SketchPong = () => {
       const { innerWidth, innerHeight } = window;
       return { innerWidth, innerHeight };
     }
+
+    function get_window_height() {
+      return getWindowSize().innerHeight;
+    }
     if (gameState.current != null) {
-      
-      
-      if (gameState.current.scores[0] == gameState.current.score_limit)
-      {
-        socket.current?.emit("GameEnded");
-      }
-      else if (gameState.current.scores[1] == gameState.current.score_limit)
-      {
-        socket.current?.emit("GameEnded");
-      }
       setUserone(gameState.current.players_avatar[0]);
       setUsertwo(gameState.current.players_avatar[1]);
 
@@ -454,23 +454,24 @@ const SketchPong = () => {
             {/* {Array.from({ length: layhfdk }, (v, i) => i + 1).map(i => (
               <button key={i} onClick={() => buttonPressed(i)}>YAWDI HAAAANAAAAA {i}</button>
             ))} */}
-            <Spectator/>
+            <Spectator/> 
           </div>
-          :  <div className="flex flex-row h-full w-full ">
+          : <>
+            <div className="flex flex-row h-full w-full ">
               
-          <div className=" w-1/6 flex h-screen bg-black text-white items-center justify-center">
-            <Sidebar/>
-          </div>
-        <div className="flex flex-col items-center justify-center  w-5/6  bg-mine-520">
-          <div className="flex text-white font-sans text-6xl my-6"> Game </div>
-          <div className="flex flex-col justify-center items-center w-5/6 h-4/6">
-            <Show_users_props/>
-            <Sketch setup={setup} draw={draw} />
-          </div>
+              <div className=" w-1/6 flex h-screen bg-black text-white items-center justify-center">
+                <Sidebar/>
+              </div>
+            <div className="flex flex-col items-center justify-center  w-5/6  bg-mine-520">
+              <div className="flex text-white font-sans text-6xl my-6"> Game </div>
+              <div className="flex flex-col justify-center items-center w-5/6 h-4/6">
+                <Show_users_props/>
+                <Sketch setup={setup} draw={draw} />
+              </div>
 
-                   
-          </div>
-        </div>)        
+                       
+              </div>
+            </div></>)        
 
 
 
@@ -481,5 +482,4 @@ const SketchPong = () => {
 };
 
 
-export default SketchPong;
-
+export default Nono;

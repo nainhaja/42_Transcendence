@@ -18,12 +18,13 @@ export declare class AppGateway implements OnGatewayInit, OnGatewayConnection, O
     private cpt;
     private socket_with_queue_id;
     private user_with_queue_id;
+    private user_with_game_id;
     afterInit(server: Server): void;
     handleConnection(client: Socket, payload: any): Promise<void>;
     handleDisconnect(player_ref: Socket): Promise<void>;
     spectJoinRoom(socket: Socket): void;
     spectJoin(socket: Socket, payload: any): void;
-    GameEnded(socket: Socket): void;
+    GameEnded(socket: Socket): Promise<void>;
     edit_user_status(user_id: string, status: UserStatus): Promise<void>;
     get_user_status(user_id: string): Promise<UserStatus>;
     joinRoom(socket: Socket): Promise<void>;

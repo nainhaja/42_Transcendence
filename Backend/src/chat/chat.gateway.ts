@@ -211,7 +211,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(client: Socket) {    
     const user = await this.getUserFromSocket(client);
-    console.log("client has connected  " + user.username);
+    
+    if (user)
+    {
+      console.log("client has connected  " + user.username);
 
     // TODO: retrieve all the connected user's DMs
 
@@ -220,21 +223,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // TODO: notify client
 
     // TODO: add client to connected_clients_map
-    this.userSocketMap.push(new userSocket(user.username, client));
-  
-    let notif: notification = new notification();
-    var sentpayload = {
-      notification: { },
-      payload: null,
-    };
-    notif.setStatusContent('Name Has Been Changed Successfully');
-    notif.setStatus(NOTIF_STATUS.SUCCESS);
-    sentpayload.notification = notif.getNotification();
+      this.userSocketMap.push(new userSocket(user.username, client));
+    
+      let notif: notification = new notification();
+      var sentpayload = {
+        notification: { },
+        payload: null,
+      };
+      notif.setStatusContent('Name Has Been Changed Successfully');
+      notif.setStatus(NOTIF_STATUS.SUCCESS);
+      sentpayload.notification = notif.getNotification();
 
-    client.emit('connection', sentpayload);
+      client.emit('connection', sentpayload);
 
-    // TODO: notify the server to updated online users
-
+      // TODO: notify the server to updated online users      
+    }
   }
 
   handleDisconnect(client: Socket) {
