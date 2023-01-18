@@ -16,6 +16,7 @@ import  Spectator  from './spectator_mod';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BackGround from '../pages/background.jpg'
 import Sidebar from './Sidebar'
+import avatar1 from "./Assets/question.jpg";
 
   
   // await axios.get( process.env.REACT_APP_BACKEND_URL+ "/chat/myChannels", 
@@ -103,8 +104,16 @@ const SketchPong = () => {
         //console.log("wch a 3chiri " + layhfdk);
       });      
     }
+    setState("play");
+    setCpt(Cpt + 1);
+    console.log("ZOBI ZObi");
+    
     if (state == "play" && layhfdk === 0)
-      socket.current?.emit("player_join_queue");
+    {
+      const game_mode : number =  + (window.location.pathname.split("/")[2]);
+      socket.current?.emit("player_join_queue", { mode: game_mode });
+    }
+      
       else if (state == "spect")
       {
 
@@ -133,70 +142,22 @@ const SketchPong = () => {
   }, [state, layhfdk]);
 
 
-  const setup_2 = (p5: p5Types,canvasParentRef: Element) => {
-    p5.createCanvas(window.innerWidth/4 , (window.innerWidth / 8)).parent(canvasParentRef)
-
-    p5.background(70);
-
-  }
-
-  function draw_2(p5: p5Types)
-  {
-    p5.resizeCanvas(window.innerWidth/2 , (window.innerWidth / 8))
-
-    p5.background(70);
-    function getWindowSize() {
-      const { innerWidth, innerHeight } = window;
-      return { innerWidth, innerHeight };
-    }
-    const player_names = (p5: p5Types) => {
-      // this method will allow us to draw the score line of both players
-      // we start of by filling the whole screen black 
-      // we allign the text in the center and we can rectrieve the score of each players using the gamestate that is constantly
-      //retrieving data from the backend of our code and then we display it
-      // how to create as many buttons as i want based on a number 
-
-      p5.fill(0);
-      p5.textSize((getWindowSize().innerHeight * 20) / getWindowSize().innerHeight);
-      p5.textAlign(p5.CENTER);
-      //p5.resizeCanvas(getWindowSize().innerWidth, getWindowSize().innerHeight);
-      //console.log(relativeHeight);
-      if (gameState.current != null) {
-        p5.text(
-          gameState.current.players_names[0],
-          (getWindowSize().innerWidth / 46) * 7,
-          getWindowSize().innerWidth / 32
-        );
-
-        // p5.loadImage(gameState.current.players_avatar[0]);
-        // p5.loadImage(gameState.current.players_avatar[1]);
-
-        p5.text(
-          gameState.current.players_names[1],
-          (getWindowSize().innerWidth / 24) * 9,
-          getWindowSize().innerWidth / 32
-        );
-
-
-
-      }
-
-    };
-    player_names(p5);
-
-  }
 
   const setup = (p5: p5Types,canvasParentRef: Element) => {
     p5.createCanvas(window.innerWidth / 2, (window.innerWidth / 4)).parent(canvasParentRef)
 
     p5.background(122);
+    const game_mode : number =  + (window.location.pathname.split("/")[2]);
+    //console.log("GAme mode is "+game_mode);
+    socket.current?.emit("game_mode", { mode: game_mode });
 
   }
 
   function User_avatar_one() {
     if (gameState.current != null)
       setUserone(gameState.current.players_avatar[0]);
-    
+    else
+      setUserone(avatar1);
     const imageLink = user_one;
   
     return (
@@ -209,6 +170,8 @@ const SketchPong = () => {
   function User_avatar_two() {
     if (gameState.current != null)
       setUsertwo(gameState.current.players_avatar[1]);
+    else
+      setUsertwo(avatar1);
     
     const imageLink = user_two;
   
@@ -225,9 +188,16 @@ const SketchPong = () => {
 
       setUserone_name(gameState.current.players_names[0]);
       setUsertwo_name(gameState.current.players_names[1]);
-
-
     }
+    else
+    {
+      setUserone_score(0);
+      setUsertwo_score(0);
+
+      setUserone_name("Player 1");
+      setUsertwo_name("Player 2");
+    }
+
     const user_fr_score = user_one_score;
     const user_sec_score = user_two_score;
 
@@ -264,15 +234,16 @@ const SketchPong = () => {
       return { innerWidth, innerHeight };
     }
     if (gameState.current != null) {
-      
-      
+     
+      const game_mode : number =  + (window.location.pathname.split("/")[2]);
       if (gameState.current.scores[0] == gameState.current.score_limit)
       {
-        socket.current?.emit("GameEnded");
+        
+        socket.current?.emit("GameEnded",{ mode: game_mode });
       }
       else if (gameState.current.scores[1] == gameState.current.score_limit)
       {
-        socket.current?.emit("GameEnded");
+        socket.current?.emit("GameEnded",{ mode: game_mode });
       }
       setUserone(gameState.current.players_avatar[0]);
       setUsertwo(gameState.current.players_avatar[1]);
@@ -367,8 +338,12 @@ const SketchPong = () => {
       //the p5.circle method allows us to create a circle using the properties in the arguments x,y,Raduis
       p5.circle(gameState.current.ball_x * scalingRatio, gameState.current.ball_y * scalingRatio, gameState.current.ball_radius * scalingRatio);
 
-
+//      console.log("Wechhhhhhhhh h"+gameState.current.state);  
+      //console.log("HHHH");
+      
       if (socket.current != null) {
+
+
         const handlePlayerOneInput = (p5: p5Types) => {
           // this is where we check for the first player's input and how he moves the paddles using W and S 
           // whenever he uses a key we emit an event called playerInput that will later on be received from the backend
@@ -376,29 +351,49 @@ const SketchPong = () => {
           //when the properties gets updated since wr using the same socket of the player he can retrieve the new x,y of paddles
           //then we can clear the whole ground we playing on and design the paddls on it's new x and y 
           //since this update gets called infinitly it will look like it's moving based on your needs 
+          const game_mode : number =  + (window.location.pathname.split("/")[2]);
+          console.log("hh2");
           if (socket.current != null && gameState.current != null) {
+            console.log("hh");
+            if (gameState.current.state === "waiting")
+            {
+              let width = getWindowSize().innerWidth;
+              p5.fill(0);
+              p5.textSize(((relativeWidth) / 35));
+              p5.textAlign(p5.CENTER);
+
+              p5.text(
+                   "Click enter to start the game ",
+                (width) / 4,
+                width / 16
+              );
+              if (p5.keyIsDown(13))
+               socket.current.emit("player_pressed_key", { input: "ENTER",mode: game_mode });
+            }
+             
             if (p5.keyIsDown(13) && socket.current.id !== gameState.current.lastscored) {
-              socket.current.emit("player_pressed_key", { input: "ENTER" });
+              socket.current.emit("player_pressed_key", { input: "ENTER",mode: game_mode });
             }
             if (p5.keyIsDown(87)) {
-              socket.current.emit("player_pressed_key", { input: "UP" });
+              socket.current.emit("player_pressed_key", { input: "UP",mode: game_mode });
             }
 
             if (p5.keyIsDown(83)) {
-              socket.current.emit("player_pressed_key", { input: "DOWN" });
+              socket.current.emit("player_pressed_key", { input: "DOWN",mode: game_mode });
             }
           }
         }
         const handlePlayerTwoInput = (p5: p5Types) => {
+          const game_mode : number =  + (window.location.pathname.split("/")[2]);
           if (socket.current != null && gameState.current != null) {
             if (p5.keyIsDown(13) && socket.current.id !== gameState.current.lastscored) {
-              socket.current.emit("player_pressed_key", { input: "ENTER" });
+              socket.current.emit("player_pressed_key", { input: "ENTER",mode: game_mode });
             }
             if (p5.keyIsDown(87)) {
-              socket.current.emit("player_pressed_key", { input: "UP" });
+              socket.current.emit("player_pressed_key", { input: "UP",mode: game_mode});
             }
             if (p5.keyIsDown(83)) {
-              socket.current.emit("player_pressed_key", { input: "DOWN" });
+              socket.current.emit("player_pressed_key", { input: "DOWN",mode: game_mode });
             }
           }
 
@@ -411,10 +406,17 @@ const SketchPong = () => {
         // when we call arr.indexOf("Sdcsdcs51s0") which is the first one it will print out 0 
         //when we receive 1 or 0 or we call their own paddle updating functions
         //console.log("Index is "+(socket.current?.id));
-        if (gameState.current.players.indexOf(socket.current?.id) === 0)
+        // if (gameState.current.players.indexOf(socket.current?.id) === 0)
+        // { 
+        //   console.log("ana");  
           handlePlayerOneInput(p5);
-        if (gameState.current.players.indexOf(socket.current.id) === 1)
-          handlePlayerTwoInput(p5);
+        //}
+        // if (gameState.current.players.indexOf(socket.current.id) === 1)
+        // {
+        //   console.log("nta"); 
+        //   handlePlayerTwoInput(p5);
+        // }
+        
       }
 
     }
@@ -422,41 +424,8 @@ const SketchPong = () => {
   //};
   return <>
 
-    {
-      state === "waiting" ?
-        <div >
-          <button onClick={() => {
-            //alert()
-
-            setState("play");
-            setCpt(Cpt + 1);
-
-          }}
-          >
-            Play a Game
-          </button>
-
-          <button onClick={() => {
-            //alert() 
-            
-            setState("spect")
-
-          }}
-          >
-            Spectate a Game
-          </button>
-        </div>
-
-
-        : (state === "spect" ?
-          
-          <div>
-            {/* {Array.from({ length: layhfdk }, (v, i) => i + 1).map(i => (
-              <button key={i} onClick={() => buttonPressed(i)}>YAWDI HAAAANAAAAA {i}</button>
-            ))} */}
-            <Spectator/>
-          </div>
-          :  <div className="flex flex-row h-full w-full ">
+    
+      <div className="flex flex-row h-full w-full ">
               
           <div className=" w-1/6 flex h-screen bg-black text-white items-center justify-center">
             <Sidebar/>
@@ -474,7 +443,7 @@ const SketchPong = () => {
 
 
 
-    }
+    
 
   </>
   return <Sketch setup={setup} draw={draw} />;

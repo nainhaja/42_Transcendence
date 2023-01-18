@@ -65,7 +65,7 @@ const Sidebar = () => {
       </div>
 
       {/* ------ ad section ------ */}
-      <div className="mt-[140px]">
+      <div className=" mt-[140px]">
         <img
           className="w-[171px] h-[171px] object-contain rounded-[10px]"
           src={sideBarImg}

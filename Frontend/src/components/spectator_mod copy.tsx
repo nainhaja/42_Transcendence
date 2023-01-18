@@ -15,15 +15,18 @@ import './../index.css';
 import './../App.css';
 import BackGround from '../pages/background.jpg'
 import Sidebar from "./Sidebar";
+import { RiLogoutCircleRLine } from "react-icons/ri";
+
+
 interface live_games {
     count: number;
 }
 
-const Spectator = () => {
+const Spectatorr = () => {
 
   const socket = useRef(null as null | Socket);
   const my_live_games = useRef(null as null | live_games);
-  const [state, setState] = useState("waiting");
+  const [state, setState] = useState("waiting");  
   const [Cpt, setCpt] = useState(0);
 
    const gameState = useRef(null as null | GameState);
@@ -387,4 +390,4 @@ const Spectator = () => {
 };
 
 
-export default Spectator;
+export default Spectatorr;

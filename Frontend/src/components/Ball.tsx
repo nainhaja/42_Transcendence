@@ -12,6 +12,7 @@ interface GameState {
     ball_direction_x: number;
     ball_direction_y: number;
     ball_radius: number;
+    ball_speed: number;
 
     fr_paddle_x: number;
     fr_paddle_y: number;

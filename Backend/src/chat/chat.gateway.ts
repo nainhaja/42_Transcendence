@@ -214,7 +214,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     if (user)
     {
-      console.log("client has connected  " + user.username);
+      //console.log("client has connected  " + user.username);
 
     // TODO: retrieve all the connected user's DMs
 
@@ -241,7 +241,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   handleDisconnect(client: Socket) {
-    console.log("client has disconnected ");
+    //console.log("client has disconnected ");
     
     // TODO: remove the client from connected_clients_array
     let index = this.userSocketMap.findIndex(e => e.socket == client);

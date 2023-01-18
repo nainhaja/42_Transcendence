@@ -116,7 +116,6 @@ let ChatGateway = class ChatGateway {
     async handleConnection(client) {
         const user = await this.getUserFromSocket(client);
         if (user) {
-            console.log("client has connected  " + user.username);
             this.userSocketMap.push(new userSocket(user.username, client));
             let notif = new notification();
             var sentpayload = {
@@ -130,7 +129,6 @@ let ChatGateway = class ChatGateway {
         }
     }
     handleDisconnect(client) {
-        console.log("client has disconnected ");
         let index = this.userSocketMap.findIndex(e => e.socket == client);
         this.userSocketMap.splice(index, 1);
     }
