@@ -25,6 +25,7 @@ export declare class AppGateway implements OnGatewayInit, OnGatewayConnection, O
     afterInit(server: Server): void;
     handleConnection(client: Socket, payload: any): Promise<void>;
     handleDisconnect(player_ref: Socket): Promise<void>;
+    Game_stopped(player_ref: Socket): Promise<void>;
     spectJoinRoom(socket: Socket): void;
     spectJoin(socket: Socket, payload: any): void;
     GameEnded(socket: Socket, payload: any): Promise<void>;

@@ -17,6 +17,19 @@ interface live_games {
     count: number;
 }
 
+interface for_spect 
+{
+  user_1_name: string;
+  user_2_name: string;
+
+  user_1_score: number;
+  user_2_score: number;
+  
+  user_1_avatar: string;
+  user_2_avatar: string;
+}
+
+
 const Spect = () => {
 
   const socket = useRef(null as null | Socket);
@@ -24,16 +37,19 @@ const Spect = () => {
   const [state, setState] = useState("waiting");
   const [Cpt, setCpt] = useState(0);
 
-   const gameState = useRef(null as null | GameState);
+  const gameState = useRef(null as null | GameState);
+  const spect_array = useRef(null as null |  Array<for_spect>);
 
-   const [user_one, setUserone] = useState("");
-   const [user_two, setUsertwo] = useState("");
+  const [user_arr, setUserone_ar] = useState(Array<for_spect>);
+
+  //  const [user_one, setUserone] = useState(Array<string>);
+  //  const [user_two, setUsertwo] = useState(Array<string>);
  
-   const [user_one_score, setUserone_score] = useState(0);
-   const [user_two_score, setUsertwo_score] = useState(0);
+  //  const [user_one_score, setUserone_score] = useState(Array<number>);
+  //  const [user_two_score, setUsertwo_score] = useState(Array<number>);
  
-   const [user_one_name, setUserone_name] = useState("");
-   const [user_two_name, setUsertwo_name] = useState("");
+  //  const [user_one_name, setUserone_name] = useState(Array<string>);
+  //  const [user_two_name, setUsertwo_name] = useState(Array<string>);
 
   const [my_width, setWidth] = useState(window.innerWidth);
   const [m_height, setHeight] = useState(window.innerHeight);
@@ -64,17 +80,19 @@ const Spect = () => {
   let scalingRatio: number = 0;
 
   function buttonPressed(nbr: number) {
-    if (gameState.current != null)
+    if (spect_array.current != null)
     {
-        setUserone(gameState.current.players_avatar[0]);
-        setUsertwo(gameState.current.players_avatar[1]);
+      setUserone_ar(spect_array.current);
+
+        // setUserone(gameState.current.players_avatar[0]);
+        // setUsertwo(gameState.current.players_avatar[1]);
     
 
-        setUserone_score(gameState.current.scores[0]);
-        setUsertwo_score(gameState.current.scores[1]);
+        // setUserone_score(gameState.current.scores[0]);
+        // setUsertwo_score(gameState.current.scores[1]);
 
-        setUserone_name(gameState.current.players_names[0]);
-        setUsertwo_name(gameState.current.players_names[1]);
+        // setUserone_name(gameState.current.players_names[0]);
+        // setUsertwo_name(gameState.current.players_names[1]);
 
     }
   }
@@ -83,8 +101,19 @@ const Spect = () => {
     socket.current = io("http://localhost:4000").on("connect", () => {
 
       
-      socket.current?.on("gameCount", (data) => {
-        setLayhfdk(+data);
+      socket.current?.on("gameCount", (data: Array<for_spect>) => {
+        spect_array.current = data;
+        
+        if (spect_array.current)
+        {
+          setUserone_ar(spect_array.current);
+         // console.log("Length is "+spect_array.current.length);
+          //console.log("user 1 name is "+spect_array.current[spect_array.current.length - 1].user_1_name);
+          let len_x = spect_array.current?.length;
+          setLayhfdk(+len_x);
+        }
+          
+       // 
       });
       setState("started watching");
       //socket.current?.emit("spectJoin", {value: -1});
@@ -108,22 +137,23 @@ const Spect = () => {
     socket.current?.emit("spectJoined");
     setState("started watching");
     socket.current?.emit("spectJoin", {value: -1});
-    if (gameState.current != null)
+    if (spect_array.current != null)
     {
-        setUserone(gameState.current.players_avatar[0]);
-        setUsertwo(gameState.current.players_avatar[1]);
+      
+      setUserone_ar(spect_array.current);
+     // console.log("Wech a 3chiri ", user_arr[0].user_1_avatar);
+        // setUserone(gameState.current.players_avatar[0]);
+        // setUsertwo(gameState.current.players_avatar[1]);
     
 
-        setUserone_score(gameState.current.scores[0]);
-        setUsertwo_score(gameState.current.scores[1]);
+        // setUserone_score(gameState.current.scores[0]);
+        // setUsertwo_score(gameState.current.scores[1]);
 
-        setUserone_name(gameState.current.players_names[0]);
-        setUsertwo_name(gameState.current.players_names[1]);
-        //console.log("HAhya live_qs tanta"+live_qs);
+        // setUserone_name(gameState.current.players_names[0]);
+        // setUsertwo_name(gameState.current.players_names[1]);
 
     }
 
-        //console.log("HAhya live_qs "+live_qs);
   }
 
   function Watching()
@@ -149,19 +179,19 @@ const Spect = () => {
         
         <div
         className=" h-3/12 px-[1.5rem] scrollbar-hide overflow-hidden overflow-y-scroll py-[1rem] rounded-[20px] flex flex-col  bg-[#262626] text-white text-[24px] mb-[12px] font-[600]"> 
-        {Array.from({ length: live_qs }, (v, i) => i + 1).map(i => (
+        {Array.from({ length: live_qs}, (v, i) => i + 1).map(i => (
             <a href={`/watch/${i}`} className=" bg-[#1F9889] flex flex-row  rounded-full  text-base my-5 items-center hover:bg-[#C66AE1] text-center">
             
                 <div className="h-5/6 w-6/12 flex  flex-row text-white text-base text-center">
-                    <img className="rounded-full w-4/12" src={user_one}></img>
-                    <div className="">{user_one_name}</div>    
+                    <img className="rounded-full w-4/12" src={user_arr[i - 1].user_1_avatar}></img>
+                    <div className="">{user_arr[i - 1].user_1_name}</div>    
                 </div>
 
-                <div className="h-3/6 w-1/12  flex flex-center text-base justify-center items-center text-white bg-black my-3 rounded-xl"> {user_one_score} - {user_two_score}</div>
+                <div className="h-3/6 w-1/12  flex flex-center text-base justify-center items-center text-white bg-black my-3 rounded-xl"> {user_arr[i - 1].user_1_score} - {user_arr[i - 1].user_2_score}</div>
                 
                 <div className="h-5/6 w-6/12 flex justify-end flex-row text-white text-base text-center">
-                        <div className="">{user_two_name}</div>
-                        <img className="rounded-full w-4/12" src={user_two}></img>
+                        <div className="">{user_arr[i - 1].user_2_name}</div>
+                        <img className="rounded-full w-4/12" src={user_arr[i - 1].user_2_avatar}></img>
                 </div>
             </a>
         ))

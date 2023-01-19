@@ -59,6 +59,10 @@ model ChatUser{
   @@id([chat_id, user_id])
 }
 
+
+
+
+
 model MessageUser{
   chat_id Int
   chat Chat @relation(fields: [chat_id], references: [id])

@@ -27,11 +27,17 @@ interface GameState {
     players : Array<string>;
     players_avatar : Array<string>;
     players_names : Array<string>;
+
+    users: Array<string>;
+    users_names: Array<string>;
+
+
     spectators: Array<string>;
 
     scores: Array<number>;
     score_limit : number;
     winner : string;
+    winner_name: string;
     lastscored: string;
 }
 

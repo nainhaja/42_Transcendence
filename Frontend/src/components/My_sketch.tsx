@@ -34,6 +34,7 @@ import avatar1 from "./Assets/question.jpg";
   //}
 
 
+
 const SketchPong = () => {
 
   const socket = useRef(null as null | Socket);
@@ -77,15 +78,10 @@ const SketchPong = () => {
 
   let scalingRatio: number = 0;
 
-  function buttonPressed(nbr: number) {
-    button_cpt = 1;
-    //console.log("nbr " + nbr);
+  function buttonPressed() {
     if (socket.current != null)
-      socket.current.emit("spectJoin", { value: nbr });
-    setState("started watching");
-    //hh = c;
-    //buttons.splice(0, c);
-    //
+      socket.current.emit("Game_Stopped");
+    setState("Ended");
   }
 
 
@@ -104,11 +100,11 @@ const SketchPong = () => {
         //console.log("wch a 3chiri " + layhfdk);
       });      
     }
-    setState("play");
+   // setState("play");
     setCpt(Cpt + 1);
     console.log("ZOBI ZObi");
     
-    if (state == "play" && layhfdk === 0)
+    if (layhfdk === 0 && gameState.current?.state !== "ended")
     {
       const game_mode : number =  + (window.location.pathname.split("/")[2]);
       socket.current?.emit("player_join_queue", { mode: game_mode });
@@ -154,7 +150,7 @@ const SketchPong = () => {
   }
 
   function User_avatar_one() {
-    if (gameState.current != null)
+    if (gameState.current != null && gameState.current.users.length === 2)
       setUserone(gameState.current.players_avatar[0]);
     else
       setUserone(avatar1);
@@ -168,7 +164,7 @@ const SketchPong = () => {
   }
 
   function User_avatar_two() {
-    if (gameState.current != null)
+    if (gameState.current != null && gameState.current.users.length === 2) 
       setUsertwo(gameState.current.players_avatar[1]);
     else
       setUsertwo(avatar1);
@@ -181,7 +177,7 @@ const SketchPong = () => {
   }
 
   function Show_users_props() {
-    if (gameState.current != null)
+    if (gameState.current != null && gameState.current.users.length === 2)
     {
       setUserone_score(gameState.current.scores[0]);
       setUsertwo_score(gameState.current.scores[1]);
@@ -274,7 +270,7 @@ const SketchPong = () => {
 
     if (gameState.current != null) 
     {
-      setUserone(gameState.current.players_avatar[0]);
+     // setUserone(gameState.current.players_avatar[0]);
 
       const drawClickToStartText = (p5: p5Types) => {
         if (gameState.current != null && socket.current != null) {
@@ -315,31 +311,31 @@ const SketchPong = () => {
 
       };
 
-      
+      const draw_Game_ended = (p5: p5Types) => {
+        if (gameState.current != null && socket.current != null) {
+            
 
-      //p5.clear();
+          let width = getWindowSize().innerWidth;
+          let height = getWindowSize().innerHeight;
+          
+            p5.fill(0);
+            p5.textSize(((relativeWidth) / 35));
+            p5.textAlign(p5.CENTER);
+            const scores = gameState.current.scores;
+            const scoresSum = scores[0] + scores[1];
+            
+              // this is in case it's a spectator he can only watch without interfering in the game because his id couldn't be find 
+              // in the players id array 
+              p5.text("Game Ended Winner is "+gameState.current.winner_name,
+                (width) / 4,
+                width / 16
+              );
+            
+          
+        }
 
+      };
 
-      // if (gameState.current.state == "endGame")
-      //   console.log("hana habibi");
-      //console.log("Asbhan lah " + gameState.current.state);
-      // p5.resizeCanvas(getWindowSize().innerWidth   , relativeHeight);
-      // p5.background(122);
-      //console.log("Plyaer name is "+gameState.current.players_names[0]);
-      drawClickToStartText(p5);
-      p5.fill(0);
-      
-     //player_names(p5);
-      //console.log("Heres my aspect ratio " + aspectRatio);
-      //the p5.rect method allows us to create a rectangle using the properties in the arguments x,y,width,heigh
-      p5.rect(gameState.current.fr_paddle_x * scalingRatio, gameState.current.fr_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
-
-      p5.rect(gameState.current.sec_paddle_x * scalingRatio, gameState.current.sec_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
-      //the p5.circle method allows us to create a circle using the properties in the arguments x,y,Raduis
-      p5.circle(gameState.current.ball_x * scalingRatio, gameState.current.ball_y * scalingRatio, gameState.current.ball_radius * scalingRatio);
-
-//      console.log("Wechhhhhhhhh h"+gameState.current.state);  
-      //console.log("HHHH");
       
       if (socket.current != null) {
 
@@ -409,7 +405,27 @@ const SketchPong = () => {
         // if (gameState.current.players.indexOf(socket.current?.id) === 0)
         // { 
         //   console.log("ana");  
-          handlePlayerOneInput(p5);
+        if (gameState.current.state !== "ended")
+        {
+          drawClickToStartText(p5);
+          p5.fill(0);
+          
+        //player_names(p5);
+          //console.log("Heres my aspect ratio " + aspectRatio);
+          //the p5.rect method allows us to create a rectangle using the properties in the arguments x,y,width,heigh
+          p5.rect(gameState.current.fr_paddle_x * scalingRatio, gameState.current.fr_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
+    
+          p5.rect(gameState.current.sec_paddle_x * scalingRatio, gameState.current.sec_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
+          //the p5.circle method allows us to create a circle using the properties in the arguments x,y,Raduis
+          p5.circle(gameState.current.ball_x * scalingRatio, gameState.current.ball_y * scalingRatio, gameState.current.ball_radius * scalingRatio);
+    
+            handlePlayerOneInput(p5);          
+        }
+        else
+        {
+          draw_Game_ended(p5);
+        }
+
         //}
         // if (gameState.current.players.indexOf(socket.current.id) === 1)
         // {
@@ -435,6 +451,14 @@ const SketchPong = () => {
           <div className="flex flex-col justify-center items-center w-5/6 h-4/6">
             <Show_users_props/>
             <Sketch setup={setup} draw={draw} />
+            <a href="/"> <button onClick={() => {
+            //alert()
+            buttonPressed();
+          }}
+          >
+            Quit Game
+          </button>
+          </a>
           </div>
 
                    
