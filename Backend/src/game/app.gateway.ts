@@ -91,8 +91,6 @@ interface mode_du_game
 }
 
 
-
-
 interface GameState {
 
   // dimentions :
@@ -233,7 +231,7 @@ class Game {
       //console.log("players are ready");
       this.update_status("waiting");
       this.server.to(this.room).emit("queue_status", this.queue_status());
-      this.starting_queue();
+      this.starting_queue();  
     } 
   }
 

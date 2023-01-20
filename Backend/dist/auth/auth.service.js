@@ -20,7 +20,6 @@ const otplib_1 = require("otplib");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const qrcode_1 = require("qrcode");
-const dto_1 = require("../user/dto");
 let AuthService = class AuthService {
     constructor(prisma, config, jwt) {
         this.prisma = prisma;
@@ -117,8 +116,11 @@ let AuthService = class AuthService {
     }
     async enable_2fa(user, res) {
         try {
-            if (user.is_two_fa_enable === true)
+            console.log("50 cent " + user.is_two_fa_enable);
+            if (user.is_two_fa_enable === true) {
+                console.log("ALREADY ENABLE AZEBI");
                 res.json({ message: "2fa is already enabled!" });
+            }
             else {
                 const updated_user = await this.prisma.user.update({
                     where: { id: user.id },
@@ -134,8 +136,10 @@ let AuthService = class AuthService {
     }
     async disable_2fa(user, res) {
         try {
-            if (user.is_two_fa_enable === false)
+            console.log("nizar l3azi : " + user.username + " zbi " + user.is_two_fa_enable);
+            if (user.is_two_fa_enable === false) {
                 res.json({ message: "2fa is already disabled!" });
+            }
             else {
                 const updated_user = await this.prisma.user.update({
                     where: { id: user.id },
@@ -151,6 +155,7 @@ let AuthService = class AuthService {
         }
     }
     async verify_2fa(req, res, param) {
+        console.log("3fa dkhl");
         const user = await this.get_user(req.user_obj.id);
         if (user.is_two_fa_enable === false) {
             throw new common_1.HttpException("2fa is not enable!", 400);
@@ -159,8 +164,14 @@ let AuthService = class AuthService {
             token: param.two_fa_code,
             secret: user.two_fa_code,
         });
-        if (!is_2fa_code_valid)
+        console.log("zabi  =" + param.two_fa_code);
+        console.log("zebi 2 = " + user.two_fa_code);
+        if (!is_2fa_code_valid) {
+            console.log("code ghalet");
             throw new common_1.HttpException("Invalid 2fa code!", 400);
+        }
+        else
+            console.log("code sa7i7 " + user.two_fa_code);
         res.json({ message: "2fa code is valid!" });
     }
     async get_user(req_id) {
@@ -182,7 +193,7 @@ __decorate([
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "generate_2fa_secret", null);
 __decorate([
@@ -194,13 +205,13 @@ __decorate([
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "enable_2fa", null);
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "disable_2fa", null);
 __decorate([

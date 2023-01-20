@@ -20,45 +20,94 @@ import Logo42 from "./42.png"
 export default function LandingPage() {
 
   return (
-      <div className="grid grid-cols-5 divide-x-2 min-h-screen bg-[#262626] text-white justify-center items-center align-center">
-        <div className="grid   items-center justify-center col-span-5 ">
-          <section className="flex flex-col h-82 px-14 py-32 gap-y-8 shadow-lg bg-black max-w-md  rounded-xl">
+    <section className="bg-[url('ayoub1.png')] bg-no-repeat bg-cover bg-fixed overflow-hidden scrollbar-hide overflow-y-scroll" >
+    <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto h-screen w-full ">
+        <a className="flex items-center mb-6 text-2xl  font-semibold text-yellow-500 flex-col">
+            <img className="h-full" src="logo1.png" alt="logo"/>
+
+        </a>
+        <div className=" rounded-lg shadow  dark:bg-gray-800 dark:border-gray-700 ">
+        <section className="flex flex-col py-32 px-16 gap-y-8 shadow-lg shadow-black border  bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-60  border-gray-900/20 rounded-xl ">
+           <a className="flex items-center mb-6 text-2xl  font-semibold text-yellow-500 flex-col">
+                <img className=" h-1/6 w-2/6" src="pingpong2.png" alt="logo"/>
+
+           </a>
             <header className="flex items-center flex-col gap-y-2">
-              <h1 className="text-3xl font-bold">Sign in to Pong</h1>
+              <h1 className="text-3xl text-white font-bold">Sign in to <span className="text-yellow-500"> Pong </span></h1>
               <p className="text-gray-100">
                 Login to play Pong with your friends
               </p>
             </header>
-            <a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-3456f615f72b01d8343af7dca0e97ee93a39ddcccbbf754dd828749d46bff59e&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fauth%2Flogin&response_type=code">
-            <button
+            <a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-3456f615f72b01d8343af7dca0e97ee93a39ddcccbbf754dd828749d46bff59e&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fauth%2Flogin&response_type=code" className="flex items-center justify-center  gap-x-4  py-4 rounded-xl bg-[#26A68E]
+              hover:scale-105 hover:bg-[#005f31] h-20">
+              {/* <button
               onClick={(e) => {
                 e.preventDefault();
               }}
-              type="button"
-              className="flex items-center justify-center gap-x-4 px-10 py-4 rounded-xl bg-[#26A68E]
-              hover:scale-105 hover:bg-[#005f31] transition duration-300 ease-in-out w-full"
-            >
+              type="button" 
+              className="transition duration-300 ease-in-out align-center w-full justify-center items-center"
+            > */}
               <img
                 src={Logo42}
                 width={42}
                 height={42}
                 alt="42 logo"
               />
-              <p className="pb-0.5 font-semibold text-black text-lg">
+              <p className="pb-0.5 font-semibold text-black text-lg sm:w-1/3 ">
                 Sign in with 42
               </p>
-            </button>
+              {/* </button> */}
             </a>
           </section>
         </div>
-        {/* <figure className="sm:col-span-3 hidden xl:block">
-          <img
-            src={"https://images.unsplash.com/photo-1586846535322-236ae1c9a134?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80%22%7D"}
-            alt="Pong image"
-            className="object-cover w-full h-full max-h-screen -hue-rotate-60
-            "
-          />
-        </figure> */}
-      </div>
+    </div>
+  </section>
   );
 }
+
+
+// export default function LandingPage() {
+
+//   return (
+//       <div className="grid grid-cols-5 divide-x-2 min-h-screen bg-[#262626] text-white justify-center items-center align-center">
+//         <div className="grid   items-center justify-center col-span-5 ">
+//           <section className="flex flex-col h-82 px-14 py-32 gap-y-8 shadow-lg bg-black max-w-md  rounded-xl">
+//             <header className="flex items-center flex-col gap-y-2">
+//               <h1 className="text-3xl font-bold">Sign in to Pong</h1>
+//               <p className="text-gray-100">
+//                 Login to play Pong with your friends
+//               </p>
+//             </header>
+//             <a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-3456f615f72b01d8343af7dca0e97ee93a39ddcccbbf754dd828749d46bff59e&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fauth%2Flogin&response_type=code">
+//             <button
+//               onClick={(e) => {
+//                 e.preventDefault();
+//               }}
+//               type="button"
+//               className="flex items-center justify-center gap-x-4 px-10 py-4 rounded-xl bg-[#26A68E]
+//               hover:scale-105 hover:bg-[#005f31] transition duration-300 ease-in-out w-full"
+//             >
+//               <img
+//                 src={Logo42}
+//                 width={42}
+//                 height={42}
+//                 alt="42 logo"
+//               />
+//               <p className="pb-0.5 font-semibold text-black text-lg">
+//                 Sign in with 42
+//               </p>
+//             </button>
+//             </a>
+//           </section>
+//         </div>
+//         {/* <figure className="sm:col-span-3 hidden xl:block">
+//           <img
+//             src={"https://images.unsplash.com/photo-1586846535322-236ae1c9a134?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80%22%7D"}
+//             alt="Pong image"
+//             className="object-cover w-full h-full max-h-screen -hue-rotate-60
+//             "
+//           />
+//         </figure> */}
+//       </div>
+//   );
+// }

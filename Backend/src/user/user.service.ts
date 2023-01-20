@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Achievement, UserStatus } from '@prisma/client';
+import { Achievement, User, UserStatus } from '@prisma/client';
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserDto } from './dto';
 import { S3 } from 'aws-sdk';
@@ -62,6 +62,47 @@ export class UserService {
         });
         return user;
     }
+
+    async get_username(user_obj : UserDto, @Res() res){
+        const user = await this.prisma.user.findUnique({
+            where:{
+                id : user_obj.id,
+            }
+        });
+        res.json(user.username);
+    }
+
+    async get_user_all(user_obj : UserDto, @Res() res){
+        const user = await this.prisma.user.findUnique({
+            where:{
+                id : user_obj.id,
+            }
+        });
+        console.log("ayoub dima khdam : " + user_obj.username);
+        res.json(user);
+    }
+
+    async get_which_friend(@Req() req, which_friend: string, @Res() res)
+    {
+        const userr = await this.prisma.user.findMany({
+          
+        });
+        let i=0;
+        for(i=0;i < userr.length; i++)
+        {
+            if (userr[i].username === which_friend)
+                break;
+        }
+        if (i !== userr.length)
+        {
+            res.json(userr[i]);
+        }
+        else 
+        {
+            throw new HttpException("Error: Username not found ", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     async update_user_score(user, score : number){
         try{
             const updated_user = await this.prisma.user.update({
@@ -76,6 +117,8 @@ export class UserService {
             throw new HttpException("Error while updating score", HttpStatus.BAD_REQUEST);
         }
     }
+
+
     async update_user_achievements(user, achievement : Achievement){
         try{
             if (!user.achievements.includes(achievement)){
@@ -95,6 +138,8 @@ export class UserService {
             throw new HttpException("Error while updating achievements", HttpStatus.BAD_REQUEST);
         }
     }
+
+
     async edit_user_status(user : UserDto, status : UserStatus){
         await this.prisma.user.update({
             where: {id: user.id },
@@ -103,6 +148,8 @@ export class UserService {
             }
           });
     }
+
+
     async get_user_achievements(user_obj : UserDto, @Res() res){
         try{
             let user = await this.get_user(user_obj.id);
@@ -148,7 +195,7 @@ export class UserService {
             throw new HttpException('Error while getting leaderboard', HttpStatus.BAD_REQUEST);
         }
     }
-    async add_friend(user : UserDto, friend_name : string, @Res() res){
+    async add_friend(user : User, friend_name : string, @Res() res){
             const nb_user : number = await this.prisma.user.count({
                 where:{
                     username: friend_name,

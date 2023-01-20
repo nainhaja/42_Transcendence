@@ -18,6 +18,7 @@ let VersionHeaderInterceptor = class VersionHeaderInterceptor {
             const http = context.switchToHttp();
             const response = http.getResponse();
             response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+            response.setHeader('Access-Control-Allow-Credentials', 'true');
         }
         return next.handle();
     }
@@ -39,11 +40,13 @@ async function bootstrap() {
     app.useGlobalInterceptors(new VersionHeaderInterceptor());
     app.enableCors({
         origin: 'http://localhost:3000',
-        methods: ["GET", "POST", "PUT", "DELETE"],
+        methods: ["GET", "PATCH", "POST", "PUT", "DELETE"],
         credentials: true,
         allowedHeaders: ["cookie", "Cookie", "authorization", "Authorization", "content-type"],
         exposedHeaders: ["cookie", "Cookie", "authorization", "Authorization", "content-type"],
     });
+    app.useGlobalPipes(new common_1.ValidationPipe());
+    app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true }));
     await app.listen(5000);
 }
 bootstrap();

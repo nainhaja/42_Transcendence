@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import * as cors from 'cors';
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, ValidationPipe } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Response } from 'express'
 @Injectable()
@@ -14,6 +14,7 @@ export class VersionHeaderInterceptor implements NestInterceptor {
     const http = context.switchToHttp();
       const response: Response = http.getResponse();
       response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+      response.setHeader('Access-Control-Allow-Credentials', 'true');
     }
 
     return next.handle();
@@ -36,12 +37,14 @@ async function bootstrap() {
 app.useGlobalInterceptors(new VersionHeaderInterceptor());
 app.enableCors({
   origin: 'http://localhost:3000',
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "PATCH" , "POST", "PUT", "DELETE"],
   credentials: true,
   allowedHeaders: ["cookie", "Cookie", "authorization", "Authorization", "content-type"],
   exposedHeaders: ["cookie", "Cookie", "authorization", "Authorization", "content-type"],
 });
 
+app.useGlobalPipes(new ValidationPipe());
+app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 // app.enableCors({
 //   origin: 'http://localhost:3000',
 // });

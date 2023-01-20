@@ -184,7 +184,7 @@ class notification{
 
 
 
-@WebSocketGateway(4000, { 
+@WebSocketGateway(4001, { 
   cors: {
     credentials: true,
   origin: 'http://localhost:3000',

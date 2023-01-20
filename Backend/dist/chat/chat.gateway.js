@@ -436,7 +436,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ChatGateway.prototype, "updaterestriction", null);
 ChatGateway = __decorate([
-    (0, websockets_1.WebSocketGateway)(4000, {
+    (0, websockets_1.WebSocketGateway)(4001, {
         cors: {
             credentials: true,
             origin: 'http://localhost:3000',
