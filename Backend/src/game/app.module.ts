@@ -14,4 +14,6 @@ import { UsersModule } from 'src/user/user.module';
   controllers: [AppController],
   providers: [AppService, AppGateway, UserService, ConfigService],
 })
-export class GameModule {}
+export class GameModule {
+  
+}

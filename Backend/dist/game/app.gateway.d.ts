@@ -32,6 +32,7 @@ export declare class AppGateway implements OnGatewayInit, OnGatewayConnection, O
     edit_user_status(user_id: string, status: UserStatus): Promise<void>;
     get_match_history(socket: Socket): Promise<void>;
     get_user_status(user_id: string): Promise<UserStatus>;
+    invite_qu(socket: Socket, payload: any): Promise<void>;
     joinRoom(socket: Socket, payload: any): Promise<void>;
     handlePlayerInput(player_ref: Socket, payload: player_properties): Promise<void>;
     getUserFromSocket(socket: Socket): Promise<import(".prisma/client").User>;

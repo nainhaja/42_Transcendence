@@ -7,7 +7,7 @@ import { User, UserStatus } from "@prisma/client";
 
 import { toDataURL } from 'qrcode';
 import { toFileStream } from 'qrcode';
-import { throwError } from "rxjs";
+//import { throwError } from "rxjs";
 import { UserDto } from "src/user/dto";
 @Injectable({})
 export class AuthService {
@@ -66,7 +66,7 @@ export class AuthService {
                     httpOnly: true,
                     path: '/',
                 });
-                req.res.redirect(`http://localhost:3000/`);
+                req.res.redirect(`http://10.12.2.1:3000/`);
             }
         }
         catch(error){

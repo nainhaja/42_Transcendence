@@ -45,7 +45,7 @@ const History = () => {
   const [live_qs, setLayhfdk] = useState(0);
 
   useEffect(() => {
-    socket.current = io("http://localhost:4000").on("connect", () => {
+    socket.current = io("http://10.12.2.1:4000").on("connect", () => {
 
       
       socket.current?.on("gameCount", (data) => {

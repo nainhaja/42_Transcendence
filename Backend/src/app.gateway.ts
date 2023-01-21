@@ -1,4 +1,4 @@
-import { Logger, Req } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Req } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import {Socket, Server} from "socket.io"
 import { JwtGuard } from 'src/auth/guard';
@@ -8,15 +8,16 @@ import { UserService } from 'src/user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserDto } from 'src/user/dto';
-import { ModeGame, StatusGame, User} from '@prisma/client';
+import { ModeGame, User, UserStatus} from '@prisma/client';
+import { Console } from 'console';
 
 
-interface UserStatus {
-    ON: 'ON',
-    OFF: 'OFF',
-    INGAME: 'INGAME',
-    INQUEUE: 'INQUEUE'
-  };
+// interface UserStatus {
+//     ON: 'ON',
+//     OFF: 'OFF',
+//     INGAME: 'INGAME',
+//     INQUEUE: 'INQUEUE'
+//   };
   
   interface Achievement {
     GREAT_WIRATE: 'GREAT_WIRATE',
@@ -154,11 +155,13 @@ class props {
 @WebSocketGateway(3080, { 
     cors: {
       credentials: true,
-    origin: 'http://localhost:3000',
+    origin: 'http://10.12.2.1:3000',
     }
   })
 
-export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect 
+
+
+export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {   
     constructor(private readonly jwtService: JwtService, private readonly prismaService: PrismaService) {}
     private logger: Logger = new Logger("AppGateway");
@@ -166,9 +169,23 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     private  server: Server;
     private my_unique_users: Array<user_info> = Array<user_info>();;
 
-    afterInit(server: Server) {
+    async afterInit(server: Server) {
         this.server = server;
         console.log("Habibi weeeecchhh");
+        
+        let all_users = await this.prismaService.user.findMany({
+        });
+
+        for(let i=0; i< all_users.length ; i++)
+        {
+            
+            await this.prismaService.user.update({
+                where : {id: all_users[i].id},
+                data: {
+                    status: "OFF",
+                }
+            })
+        }
       }
     
       async handleConnection(client: Socket, payload: any) 
@@ -178,16 +195,27 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         
         if (user)
         {
+            if (user.status === "OFF")
+            {
+                console.log("Wa qwada hadi");
+                await this.prismaService.user.update({
+                    where : {id: user.id},
+                    data: {
+                    status: "ON",
+                    }
+                })
+                user.status = "ON";
+            }
             if (this.my_users.length === 0)
             {
                 this.my_users.push(new props(this.server));
                 this.my_users[0].socket_ids.push(client.id);
-                console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[0].socket_ids[0]);
+                
                 this.my_users[0].user_id = user.id;
                 this.my_users[0].username = user.username;
                 this.my_users[0].user_status = user.status;
                 this.my_users[0].room = user.id;
-                
+                console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[0].socket_ids[0]+this.my_users[0].user_status);
                 this.my_unique_users.push(new user_info());
                 this.my_unique_users[0].user_set_all(user);
 
@@ -215,7 +243,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
                 }
                 this.my_users[i].socket_ids.push(client.id);
-                console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[i].socket_ids[0]);                
+                console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[i].socket_ids[0]+this.my_users[i].user_status);                
                 client.join(this.my_users[i].room);
                 //this.my_users[0].emitting_events();
             }
@@ -223,7 +251,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
       }
 
-        
       @SubscribeMessage("invite_game")  
       async inviting_game(socket: Socket,payload: any)
       {
@@ -233,21 +260,41 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
             console.log("i am "+user.username + "i'm trying to invite the player " +payload.player1.username);
             let i;
             let j=0;
+            let x=0;
             for(i=0; i < this.my_users.length; i++)
             {
                 if (this.my_users[i].username === payload.player1.username)
                 {
-                    break;
+                    x = i;
                 }
                 else if (this.my_users[i].username === user.username)
                 {
-                    i = j;
+                    j = i;
                 }
             }
-            if (i !== this.my_users.length)
+            if (x !== this.my_users.length)
             {
-                console.log("Ana hwa "+this.my_unique_users[j].User_get_all().username);
-                this.server.to(this.my_users[i].room).emit("game_invite", this.my_unique_users[j].User_get_all());
+                const akhir_user = this.my_unique_users[j].User_get_all();
+
+                console.log("Ana hwa "+akhir_user.username);
+                const new_usr = await this.prismaService.user.update({
+                    where: {id: akhir_user.id },
+                    data: {
+                        status: "INQUEUE",
+                    }
+                  });
+                console.log("zabi hana "+new_usr.status+" "+this.my_users[x].user_status);
+                
+                if (this.my_users[x].user_status === UserStatus.ON)
+                {
+                    console.log("qalwa");
+                     this.server.to(this.my_users[x].room).emit("game_invite", this.my_unique_users[j].User_get_all());
+                }
+                else 
+                {
+                    console.log("Wa qawaaaada hadiiiiiiii ");
+                }
+               
             } 
         }
         else 

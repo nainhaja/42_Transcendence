@@ -217,7 +217,7 @@ export const Dashboard = () => {
 export const Leaderboard = () => {
   const [Leaderboard, setLeaderboard] = useState(Array<any>)
   useEffect(() => {
-    axios.get('http://localhost:5000/user/leaderboard', {withCredentials: true})
+    axios.get('http://10.12.2.1:5000/user/leaderboard', {withCredentials: true})
     .then((response) =>{
       setLeaderboard(response.data)
     })

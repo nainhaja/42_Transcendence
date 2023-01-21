@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext , } from 'react';
 import { FunctionComponent, useEffect, useState , useRef} from "react";
 import Sketch  from "react-p5";
 import p5Types from "p5";
@@ -12,7 +12,7 @@ import  Spectator  from './components/spectator_mod';
 import  Homee  from './pages/home';
 
 import  Login  from './pages/login';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Watching from './pages/watch';
 import Spect from './components/spectator';
 import Chat from './components/Chat';
@@ -76,43 +76,68 @@ interface user_info {
  // achievements: Achievement[]
 }
 
-function GameChallengeToast(props: {data : any}) {
+function Game_invite(props: {data : user_info}) {
   
-  const acceptChallenge = (e : any)=>{
-
+  const userinho = useRef(null as null | user_info);
+  const gameSocket = useContext(game_socket_context);
+  userinho.current = props.data;
+  const navigate = useNavigate();
+  
+  const socket = useRef(null as null | Socket);
+  const gameState = useRef(null as null | GameState);
+  console.log("amalk");
+  const accept = (e : any)=>{
+    navigate("/game/4");
   }
+
+  function Decline () {
+    console.log("WA QAWAAAADA HADI1");
+
+    socket.current = io("http://10.12.2.1:4000", {
+      withCredentials: true,
+    }).on("connect", () => {
+
+      socket.current?.on("queue_status", (data: GameState) => {
+        gameState.current = data;
+      });
+      socket.current?.emit("invite_queue", { mode: 4, state: 0});
+      console.log("sir gah thawa layrhm bak")
+    });
+
+
+  };
   return (
-    <></>
-    // <ToastStyle to="">
-    //     <div className='avatar'>
-    //       <AvatarComponent img={User.defaultAvatar}/>
-    //     </div>
-    //     <div className='data'>
-    //         <div className=' name'>
-    //           {User.displayName}
-    //         </div>
-    //         <div className='msg'>
-    //           Is challenging you.:
-    //         </div>
-    //     </div>
-    //     <div className='buttons'>
-    //       <Button  onClick={(e)=>{acceptChallenge(e)}} size='small'  isIcon={true} icon={<CheckIcon/>}/>
-    //     </div>
-    // </ToastStyle>
+    <div className='w-full h-full'>
+        <div className='avatar w-1/6 justify-center items-center mx-auto text-white'>
+          <img className='rounded-full' src={props.data.avatar}/>
+        </div>
+        <div className='data text-center text-white'>
+            <div className=' name'>
+              {props.data.username}
+            </div>
+            <div className='msg text-center'>
+              Is challenging you.:
+            </div>
+        </div>
+        <div className='buttons text-center '>
+          <button className='px-5  mx-6 bg-green-600 rounded-full text-black'  onClick={(e)=>{accept(e)}}>Accept</button> 
+          <button  className='px-5 bg-red-600 rounded-full text-black' onClick={(e)=>{Decline()}}>Decline</button> 
+        </div>
+    </div>
   )
 }
 
 
-const CustomToastWithLinkGame = (data : any) => (
-  <div style={{width: "100%" , height : "100%"}}>
-        <GameChallengeToast data={data}/>
+const game_link = (data : user_info) => (
+  <div className="justify-center align-center ">
+        <Game_invite data={data}/>
   </div>
 );
 
 function App() {
 
   const main_socket = useContext(main_socket_context);
-  const gameSocket = useContext(game_socket_context);
+  
   const User = useContext(main_user_context);
   //const [User_info, SetUser_info] = useState<user_info>({});
 
@@ -126,13 +151,17 @@ function App() {
 
 
       main_socket.on("game_invite", (data: user_info) => {
-        userinho.current = data;
+        
        // alert("Player : " +data+" has invited you to a game habibi");
  
 
           const notify = () =>{ 
-            if (userinho.current )
-              toast("Player : " +userinho.current.id+" has invited you to a game habibii");} 
+                toast(game_link(data) , 
+                {
+                  // 
+                });
+              // toast("Player "+userinho.current.username + " Has invited you to a game")
+            }
           notify();
        
         

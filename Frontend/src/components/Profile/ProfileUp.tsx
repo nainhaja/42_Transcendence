@@ -17,9 +17,9 @@ const ProfileUp = () => {
   console.log("HEHE"+ shkon);
   let url:string ;
   if (shkon)
-    url = "http://localhost:5000/user/user/" + shkon;
+    url = "http://10.12.2.1:5000/user/user/" + shkon;
   else
-    url = "http://localhost:5000/user/user"
+    url = "http://10.12.2.1:5000/user/user"
  
   const [User, SetUser] = useState<any>({});
   const [me, itsme] = useState(false);
@@ -27,7 +27,10 @@ const ProfileUp = () => {
   function ButtonisPressed()
   {
     console.log("M3lem mqwda alik a 3chiri "+User.username)
-    main_socket.emit("invite_game", {player1: User});
+    main_socket.emit("invite_game", {player1: User})
+    
+    navigate("/game/4");
+    //Navigate("/game/4/"+User.)
     //main_socket.emit("invite_game")
   }
 

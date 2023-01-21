@@ -93,7 +93,7 @@ const Nono = () => {
   useEffect(() => {
 
 
-    socket.current = io("http://localhost:4000", {
+    socket.current = io("http://10.12.2.1:4000", {
       withCredentials: true,
     }).on("connect", () => {
 

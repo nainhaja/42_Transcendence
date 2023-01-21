@@ -187,7 +187,7 @@ class notification{
 @WebSocketGateway(4001, { 
   cors: {
     credentials: true,
-  origin: 'http://localhost:3000',
+  origin: 'http://10.12.2.1:3000',
   }
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

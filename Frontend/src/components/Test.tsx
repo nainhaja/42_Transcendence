@@ -5,7 +5,7 @@ import React from 'react';
 
 class Test extends React.Component {
   componentDidMount() {
-    axios.get('localhost:5000/test')
+    axios.get('10.12.2.1:5000/test')
       .then(response => {
         // handle success
         console.log(response.data);

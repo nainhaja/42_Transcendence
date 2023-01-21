@@ -31,6 +31,7 @@ class for_spect {
         this.user_2_score = 0;
         this.user_1_avatar = "";
         this.user_2_avatar = "";
+        this.index = -1;
     }
 }
 class Game {
@@ -199,7 +200,7 @@ class Game {
     }
     update_paddles(payload) {
         if (payload.input === "DOWN") {
-            if (payload.id === this.players[0]) {
+            if (payload.id === this.users[0]) {
                 if (this.fr_paddle_y + this.paddleSpeed < this.height - this.paddle_height)
                     this.fr_paddle_y += this.paddleSpeed;
                 else
@@ -213,7 +214,7 @@ class Game {
             }
         }
         else {
-            if (payload.id === this.players[0]) {
+            if (payload.id === this.users[0]) {
                 if (this.fr_paddle_y - this.paddleSpeed > 0)
                     this.fr_paddle_y -= this.paddleSpeed;
                 else
@@ -281,7 +282,7 @@ let AppGateway = class AppGateway {
     afterInit(server) {
         this.server = server;
         if (this.GameMode.length === 0) {
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 4; i++) {
                 this.GameMode.push(new mode_du_game());
                 this.GameMode[i] = new mode_du_game();
                 this.GameMode[i].queues = new Array();
@@ -299,8 +300,6 @@ let AppGateway = class AppGateway {
             });
             console.log("Number of games for user is " + game_history.length);
             console.log("HAna hbiba" + user.username);
-            if (await this.get_user_status(user.id) === off_status)
-                await this.edit_user_status(user.id, user_status);
         }
     }
     async handleDisconnect(player_ref) {
@@ -315,9 +314,9 @@ let AppGateway = class AppGateway {
             const user_status = "INQUEUE";
             const on_status = "ON";
             if (user.id === this.GameMode[q_mode].queues[user_id].users[0])
-                this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[1], this.GameMode[q_mode].queues[user_id].users_names[1]);
-            else
                 this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[0], this.GameMode[q_mode].queues[user_id].users_names[1]);
+            else
+                this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[1], this.GameMode[q_mode].queues[user_id].users_names[0]);
             this.GameMode[q_mode].queues[user_id].update_status("ended");
             this.GameMode[q_mode].queues[user_id].emit_and_clear();
             for (let i = 0; i < this.GameMode[q_mode].queues[user_id].players.length; i++)
@@ -349,6 +348,7 @@ let AppGateway = class AppGateway {
                     spect_array[spect_array.length - 1].user_2_score = this.GameMode[x].queues[i].scores[1];
                     spect_array[spect_array.length - 1].user_1_avatar = this.GameMode[x].queues[i].players_avatar[0];
                     spect_array[spect_array.length - 1].user_2_avatar = this.GameMode[x].queues[i].players_avatar[1];
+                    spect_array[spect_array.length - 1].index = x;
                     j++;
                 }
             }
@@ -433,6 +433,44 @@ let AppGateway = class AppGateway {
                         }
                     });
                 }
+                else {
+                    if (user1.id === user.id) {
+                        await this.prismaService.user.update({
+                            where: { id: user2.id },
+                            data: {
+                                win: user2.win + 1,
+                                win_streak: user2.win_streak + 1,
+                                status: "ON",
+                            }
+                        });
+                        await this.prismaService.user.update({
+                            where: { id: user1.id },
+                            data: {
+                                lose: user1.lose + 1,
+                                win_streak: 0,
+                                status: "ON",
+                            }
+                        });
+                    }
+                    else {
+                        await this.prismaService.user.update({
+                            where: { id: user1.id },
+                            data: {
+                                win: user1.win + 1,
+                                win_streak: user1.win_streak + 1,
+                                status: "ON",
+                            }
+                        });
+                        await this.prismaService.user.update({
+                            where: { id: user2.id },
+                            data: {
+                                lose: user2.lose + 1,
+                                win_streak: 0,
+                                status: "ON",
+                            }
+                        });
+                    }
+                }
                 this.GameMode[user_mode].queues[user_id].scores[0] = 0;
                 this.GameMode[user_mode].queues[user_id].scores[1] = 0;
             }
@@ -463,6 +501,92 @@ let AppGateway = class AppGateway {
         const user_status = user.status;
         return (user_status);
     }
+    async invite_qu(socket, payload) {
+        const user = await this.getUserFromSocket(socket);
+        const user_status = "INQUEUE";
+        const game_status = "INGAME";
+        if (user) {
+            const room_id = user.id;
+            let i = payload.mode - 1;
+            if (!this.user_with_queue_id.has(user.id)) {
+                console.log("Here  " + user.username);
+                this.getUserFromSocket(socket);
+                let size = this.GameMode[payload.mode - 1].queues.length;
+                let nadi = 0;
+                console.log("Xddd" + size + user.status);
+                if (size === 0 && user.status === client_1.UserStatus.INQUEUE) {
+                    console.log("zabi nta li baqi lia");
+                    this.GameMode[i].queues.push(new Game(this.server));
+                    this.GameMode[i].queues[0].update_room(room_id);
+                    socket.join(room_id);
+                    size = 1;
+                    nadi = 1;
+                }
+                else if (size !== 0 && user.status === client_1.UserStatus.INQUEUE) {
+                    this.GameMode[i].queues.push(new Game(this.server));
+                    size = this.GameMode[payload.mode - 1].queues.length;
+                    this.GameMode[i].queues[size - 1].update_room(room_id);
+                    socket.join(room_id);
+                    nadi = 1;
+                }
+                else if (this.GameMode[i].queues[size - 1].users.length === 1) {
+                    const user1 = await this.prismaService.user.findUnique({
+                        where: { id: this.GameMode[i].queues[size - 1].users[0] }
+                    });
+                    if (user1) {
+                        console.log("Hhhhhh zabi tani " + this.GameMode[i].queues[size - 1].users[0] + " w user hwa " + user1.username + user1.status);
+                        if (user1.status === client_1.UserStatus.INQUEUE) {
+                            await this.edit_user_status(user1.id, client_1.UserStatus.INGAME);
+                            await this.edit_user_status(user.id, client_1.UserStatus.INGAME);
+                            console.log("Wselt ta hna" + user1.username + user.username);
+                            socket.join(this.GameMode[i].queues[size - 1].room);
+                            this.cpt++;
+                            nadi = 1;
+                        }
+                    }
+                }
+                if (nadi === 1) {
+                    this.GameMode[i].queues[size - 1].push_player(socket.id, user.avatar, user.username);
+                    this.GameMode[i].queues[size - 1].push_users(user.id, user.username);
+                    this.GameMode[i].queues[size - 1].check_players_are_ready();
+                    if (payload.state === 1) {
+                        this.socket_with_queue_id.set(socket.id, size - 1);
+                        this.user_with_queue_id.set(user.id, size - 1);
+                        this.user_with_queue_mode.set(user.id, i);
+                    }
+                    else if (payload.state === 0) {
+                        console.log("Zabi ?");
+                        this.GameMode[i].queues[size - 1].update_status("decline");
+                        this.GameMode[i].queues[size - 1].emit_and_clear();
+                        this.user_with_queue_id.delete(this.GameMode[i].queues[size - 1].users[0]);
+                        this.user_with_queue_mode.delete(this.GameMode[i].queues[size - 1].users[0]);
+                    }
+                    if (this.GameMode[i].queues[size - 1].users.length === 2 && payload.state === 1) {
+                        const game_modes = ["MODE1", "MODE2", "MODE3", "MODE2"];
+                        console.log("Ha mode diali " + game_modes[i]);
+                        const game = await this.prismaService.game.create({
+                            data: {
+                                user1: { connect: { id: this.GameMode[i].queues[size - 1].users[0] } },
+                                user2: { connect: { id: this.GameMode[i].queues[size - 1].users[1] } },
+                                user1_score: 0,
+                                user2_score: 0,
+                                mode: game_modes[i],
+                                status: client_1.StatusGame.PLAYING,
+                            }
+                        });
+                        this.user_with_game_id.set(this.GameMode[i].queues[size - 1].users[0], game.id);
+                        this.user_with_game_id.set(this.GameMode[i].queues[size - 1].users[1], game.id);
+                        this.GameMode[i].queues[size - 1].user_with_game_id = this.user_with_game_id;
+                    }
+                }
+            }
+            else {
+                const user_id = this.user_with_queue_id.get(user.id);
+                this.GameMode[3].queues[user_id].players.push(socket.id);
+                socket.join(this.GameMode[3].queues[user_id].room);
+            }
+        }
+    }
     async joinRoom(socket, payload) {
         const user = await this.getUserFromSocket(socket);
         const user_status = "INQUEUE";
@@ -472,9 +596,9 @@ let AppGateway = class AppGateway {
             let i = payload.mode - 1;
             if (!this.user_with_queue_id.has(user.id)) {
                 console.log("Here  " + user.username);
-                await this.edit_user_status(user.id, user_status);
                 this.getUserFromSocket(socket);
                 let size = this.GameMode[payload.mode - 1].queues.length;
+                await this.edit_user_status(user.id, user_status);
                 if (size === 0) {
                     this.GameMode[i].queues.push(new Game(this.server));
                     this.GameMode[i].queues[0].update_room(room_id);
@@ -523,6 +647,7 @@ let AppGateway = class AppGateway {
                 }
             }
             else {
+                console.log("Ha hna bdina f qwada");
                 const user_id = this.user_with_queue_id.get(user.id);
                 const us_mode = this.user_with_queue_mode.get(user.id);
                 this.GameMode[us_mode].queues[user_id].players.push(socket.id);
@@ -541,8 +666,8 @@ let AppGateway = class AppGateway {
             if (this.GameMode[user_mode].queues[user_id].ball_speed === 0) {
                 if (payload.mode === 1)
                     this.GameMode[user_mode].queues[user_id].ball_speed = 0.75;
-                else if (payload.mode === 2)
-                    this.GameMode[user_mode].queues[user_id].ball_speed = 1.75;
+                else if (payload.mode === 2 || payload.mode === 4)
+                    this.GameMode[user_mode].queues[user_id].ball_speed = 0.25;
                 else if (payload.mode === 3)
                     this.GameMode[user_mode].queues[user_id].ball_speed = 2.75;
                 x = 1;
@@ -560,7 +685,7 @@ let AppGateway = class AppGateway {
             }
         }
         if (x !== 1) {
-            this.GameMode[user_mode].queues[user_id].player_activity(Object.assign(Object.assign({}, payload), { id: player_ref.id }));
+            this.GameMode[user_mode].queues[user_id].player_activity(Object.assign(Object.assign({}, payload), { id: user.id }));
         }
         else
             console.log("SIR THAWA");
@@ -611,6 +736,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AppGateway.prototype, "get_match_history", null);
 __decorate([
+    (0, websockets_1.SubscribeMessage)('invite_queue'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", Promise)
+], AppGateway.prototype, "invite_qu", null);
+__decorate([
     (0, websockets_1.SubscribeMessage)('player_join_queue'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
@@ -626,7 +757,7 @@ AppGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(4000, {
         cors: {
             credentials: true,
-            origin: 'http://localhost:3000',
+            origin: 'http://10.12.2.1:3000',
         }
     }),
     __metadata("design:paramtypes", [jwt_1.JwtService, prisma_service_1.PrismaService])

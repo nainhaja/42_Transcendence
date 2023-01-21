@@ -6,7 +6,7 @@ import fireIcon from "../../Assets/fire.png";
 const ProfileUp = () => {
   const Getachiev = () => 
   {
-    axios.get('http://localhost:5000/user/achievements', {withCredentials: true})
+    axios.get('http://10.12.2.1:5000/user/achievements', {withCredentials: true})
     .then(res => {
       console.log(res.data)
     }).catch(err=> {

@@ -11,7 +11,7 @@ export declare class AppGateway implements OnGatewayInit, OnGatewayConnection, O
     private my_users;
     private server;
     private my_unique_users;
-    afterInit(server: Server): void;
+    afterInit(server: Server): Promise<void>;
     handleConnection(client: Socket, payload: any): Promise<void>;
     inviting_game(socket: Socket, payload: any): Promise<void>;
     handleDisconnect(player_ref: Socket): Promise<void>;

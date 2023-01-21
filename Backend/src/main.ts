@@ -13,7 +13,7 @@ export class VersionHeaderInterceptor implements NestInterceptor {
     if (context.getType() === 'http') {
     const http = context.switchToHttp();
       const response: Response = http.getResponse();
-      response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+      response.setHeader('Access-Control-Allow-Origin', 'http://10.12.2.1:3000');
       response.setHeader('Access-Control-Allow-Credentials', 'true');
     }
 
@@ -33,10 +33,9 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
 
-
 app.useGlobalInterceptors(new VersionHeaderInterceptor());
 app.enableCors({
-  origin: 'http://localhost:3000',
+  origin: 'http://10.12.2.1:3000',
   methods: ["GET", "PATCH" , "POST", "PUT", "DELETE"],
   credentials: true,
   allowedHeaders: ["cookie", "Cookie", "authorization", "Authorization", "content-type"],
@@ -46,7 +45,7 @@ app.enableCors({
 app.useGlobalPipes(new ValidationPipe());
 app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 // app.enableCors({
-//   origin: 'http://localhost:3000',
+//   origin: 'http://10.12.2.1:3000',
 // });
 
   await app.listen(5000);

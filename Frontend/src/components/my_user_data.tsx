@@ -22,7 +22,7 @@ interface User_prop
 const getUserData =  async()=>{
     let ret  : any = {};
 
-     await axios.get("http://localhost:5000/user/user", 
+     await axios.get("http://10.12.2.1:5000/user/user", 
       {withCredentials: true} 
       ).then((res)=>{
         ret =  res.data;

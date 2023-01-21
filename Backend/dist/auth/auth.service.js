@@ -76,7 +76,7 @@ let AuthService = class AuthService {
                     httpOnly: true,
                     path: '/',
                 });
-                req.res.redirect(`http://localhost:3000/`);
+                req.res.redirect(`http://10.12.2.1:3000/`);
             }
         }
         catch (error) {

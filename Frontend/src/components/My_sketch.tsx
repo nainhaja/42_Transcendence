@@ -10,7 +10,7 @@ import { GameState } from "./Ball"
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from "socket.io-client";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { stat } from "fs";
 import  Spectator  from './spectator_mod';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -50,7 +50,7 @@ const SketchPong = () => {
   const [user_one_name, setUserone_name] = useState("");
   const [user_two_name, setUsertwo_name] = useState("");
 
-
+  const navigate = useNavigate();
   const [my_width, setWidth] = useState(window.innerWidth);
   const [m_height, setHeight] = useState(window.innerHeight);
 
@@ -88,7 +88,7 @@ const SketchPong = () => {
   useEffect(() => {
 
 
-    socket.current = io("http://localhost:4000", {
+    socket.current = io("http://10.12.2.1:4000", {
       withCredentials: true,
     }).on("connect", () => {
 
@@ -107,7 +107,10 @@ const SketchPong = () => {
     if (layhfdk === 0 && gameState.current?.state !== "ended")
     {
       const game_mode : number =  + (window.location.pathname.split("/")[2]);
-      socket.current?.emit("player_join_queue", { mode: game_mode });
+      if (game_mode !== 4)
+        socket.current?.emit("player_join_queue", { mode: game_mode });
+      else 
+        socket.current?.emit("invite_queue", { mode: game_mode, state: 1});
     }
       
       else if (state == "spect")
@@ -336,6 +339,31 @@ const SketchPong = () => {
 
       };
 
+      const draw_Game_declined = (p5: p5Types) => {
+        if (gameState.current != null && socket.current != null) {
+            
+
+          let width = getWindowSize().innerWidth;
+          let height = getWindowSize().innerHeight;
+          
+            p5.fill(0);
+            p5.textSize(((relativeWidth) / 35));
+            p5.textAlign(p5.CENTER);
+            const scores = gameState.current.scores;
+            const scoresSum = scores[0] + scores[1];
+            
+              // this is in case it's a spectator he can only watch without interfering in the game because his id couldn't be find 
+              // in the players id array 
+              p5.text("User "+gameState.current.users_names[1]+" declined your game Request",
+                (width) / 4,
+                width / 16
+              );
+            
+          
+        }
+
+      };
+
       
       if (socket.current != null) {
 
@@ -405,7 +433,15 @@ const SketchPong = () => {
         // if (gameState.current.players.indexOf(socket.current?.id) === 0)
         // { 
         //   console.log("ana");  
-        if (gameState.current.state !== "ended")
+        if (gameState.current.state === "decline")
+        {
+          navigate("/")
+          socket.current.disconnect();
+          
+        }
+        else if (gameState.current.state === "ended")
+          draw_Game_ended(p5);
+        else
         {
           drawClickToStartText(p5);
           p5.fill(0);
@@ -420,10 +456,6 @@ const SketchPong = () => {
           p5.circle(gameState.current.ball_x * scalingRatio, gameState.current.ball_y * scalingRatio, gameState.current.ball_radius * scalingRatio);
     
             handlePlayerOneInput(p5);          
-        }
-        else
-        {
-          draw_Game_ended(p5);
         }
 
         //}
