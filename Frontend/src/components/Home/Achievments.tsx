@@ -1,8 +1,8 @@
 import React from "react";
-import avatar1 from "../Assets/Ellipse_213.png";
-import avatar2 from "../Assets/Ellipse_214.png";
-import avatar3 from "../Assets/Ellipse_215.png";
-import avatar4 from "../Assets/Ellipse_216.png";
+import avatar1 from "../../Assets/Ellipse 213.png";
+import avatar2 from "../../Assets/Ellipse 214.png";
+import avatar3 from "../../Assets/Ellipse 215.png";
+import avatar4 from "../../Assets/Ellipse 216.png";
 import fireIcon from "../../Assets/fire.png";
 
 const fakeData = [

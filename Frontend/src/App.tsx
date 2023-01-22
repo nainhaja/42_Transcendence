@@ -1,36 +1,26 @@
-import React, { useContext , } from 'react';
-import { FunctionComponent, useEffect, useState , useRef} from "react";
-import Sketch  from "react-p5";
-import p5Types from "p5";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import Addfriend from "./pages/Addfriend";
+import SketchPong from "./components/My_sketch";
+import Spectator from "./components/spectator_mod";
+import Login from "./pages/login";
+import Nofriendpage from "./pages/errornotfound";
+
+import Verify_2fa from "./pages/verify_2fa";
+import "./index";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { getUser, IUserState, login } from "./reducers/UserSlice";
+import { ChatPage } from "./pages/ChatPage";
 import { io, Socket } from "socket.io-client";
-import {GameState} from "./components/Ball"
-import p5 from 'p5';
-import {Paddle, Lobby, MessageInput} from "./components/Lobby"
-import logo from './logo.svg';
-import  SketchPong  from './components/My_sketch';
-import  Spectator  from './components/spectator_mod';
-import  Homee  from './pages/home';
-
-import  Login  from './pages/login';
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import Watching from './pages/watch';
-import Spect from './components/spectator';
-import Chat from './components/Chat';
-import ProfileUp from './pages/ok';
-import Main_chat from './components/main_chat';
-import { ChatContext } from './Contexts/ChatContext';
-import Nono from './components/message';
-import { Dashboard, Home } from './components/souhail';
-import  History  from './components/history';
-import { BiHeart } from 'react-icons/bi'
-import axios from 'axios';
-import { game_socket_context, main_socket_context } from './components/sockets';
-import { main_user_context} from './components/my_user_data';
-import Profile from './components/Profile';
-
-import { ToastContainer, toast } from 'react-toastify';
+import { GameState } from "./components/Ball";
+import { game_socket_context, main_socket_context } from "./sockets";
+import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css'
-
 
 
 interface props
@@ -93,7 +83,7 @@ function Game_invite(props: {data : user_info}) {
   function Decline () {
     console.log("WA QAWAAAADA HADI1");
 
-    socket.current = io("http://10.12.2.1:4000", {
+    socket.current = io("http://localhost:4000", {
       withCredentials: true,
     }).on("connect", () => {
 
@@ -116,7 +106,7 @@ function Game_invite(props: {data : user_info}) {
               {props.data.username}
             </div>
             <div className='msg text-center'>
-              Is challenging you.:
+              Challenged you to A Duel !
             </div>
         </div>
         <div className='buttons text-center '>
@@ -127,77 +117,107 @@ function Game_invite(props: {data : user_info}) {
   )
 }
 
-
 const game_link = (data : user_info) => (
   <div className="justify-center align-center ">
         <Game_invite data={data}/>
   </div>
 );
 
-function App() {
 
+function App() {
   const main_socket = useContext(main_socket_context);
   
-  const User = useContext(main_user_context);
-  //const [User_info, SetUser_info] = useState<user_info>({});
+  const [state, setState] = useState<any>({});
 
-  const userinho = useRef(null as null | user_info);
+  const userData: IUserState = useSelector((state: any) => state.user);
 
-  const propsinho = useRef(null as null | props);
-
-
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    dispatch(getUser());
+  }, []);
 
+  useEffect(() => {
+    if (!userData.isLoggedIn) {
+      axios
+        .get("http://localhost:5000/user/me", { withCredentials: true })
+        .then((response) => {
+          dispatch(login(response.data));
+        });
+    }
 
-      main_socket.on("game_invite", (data: user_info) => {
-        
-       // alert("Player : " +data+" has invited you to a game habibi");
- 
+    main_socket.on("game_invite", (data: user_info) => {
+         const notify = () =>{ 
+               toast(game_link(data));
+           }
+         notify();       
+     })
+  }, []);
 
-          const notify = () =>{ 
-                toast(game_link(data) , 
-                {
-                  // 
-                });
-              // toast("Player "+userinho.current.username + " Has invited you to a game")
-            }
-          notify();
-       
-        
-      })
-      console.log("Heeere brb");
-      //main_socket.removeListener("game_invite");
-  });
-
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/user/user", { withCredentials: true })
+      .then((response) => {
+        setState(response.data);
+      });
+  }, []);
+  console.log("ayoub zab : " + state.is_two_fa_enable);
   return (
-  <BrowserRouter>
-      <ToastContainer/>
+    <>
+    <ToastContainer/>
       <Routes>
-        <Route path='/' element={<Dashboard/>} >
-        <Route index element= { <Home/> } />
+        <Route element={<RequireAuth />}>
+          <Route path="/" element={<Dashboard />}>
+            <Route index element={<Home />} />
+            <Route path="/profile/*" element={<Profile />} />
+            <Route
+              path="/settings"
+              element={<Settings state={state.is_two_fa_enable} />}
+            />
+             <Route path="/chat" element={<ChatPage/>} />
+            <Route path="/friends" element={<Addfriend />} />
+            <Route path='/game/*' element={<SketchPong/>} />
+            <Route path='/watch/*' element={<Spectator/>} />
+          </Route>
         </Route>
-        
-        <Route path='/game/*' element={<SketchPong/>} />
-        <Route path='/watch/*' element={<Spectator/>} />
-        <Route path='/login' element={<Login/>} />
-        <Route path='/play' element={<Homee/>} />
-        <Route path='/history' element={<History/>} />
-       
-        <Route path="/profile/*" element={<Profile/>} />
-
-        <Route path='/watching' element={<Watching/>} />
-        <Route path='/spect' element={<Spect/>} />
-        <Route path='/chat' element={<Chat/>} />
-        {/* <Route path='/profile' element={<ProfileUp/>} /> */}
-        <Route path='/main_chat' element={<Main_chat/>} />
-        <Route path='/nono' element={<Nono/>} />
-        
+        <Route element={<NotRequireAuth />}>
+          <Route path="/" element={<Dashboard />}>
+            <Route path="/verify_2fa/:userId" element={<Verify_2fa />} />
+            <Route path="/login" element={<Login />} />
+          </Route>
+          <Route path="/errornotfound" element={<Nofriendpage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/errornotfound" replace />} />
       </Routes>
-      
-  </BrowserRouter>)
-
+    </>
+  );
 }
-  
+
+
 export default App;
 
+function RequireAuth() {
+  const userData: IUserState = useSelector((state: any) => state.user);
+  let location = useLocation();
+
+  if (userData.isLoading) return <div>Loading...</div>;
+
+  if (!userData.isLoggedIn) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <Outlet />;
+}
+
+function NotRequireAuth() {
+  const userData: IUserState = useSelector((state: any) => state.user);
+  let location = useLocation();
+
+  if (userData.isLoading) return <div>Loading...</div>;
+
+  if (userData.isLoggedIn) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
+
+  return <Outlet />;
+}

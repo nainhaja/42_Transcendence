@@ -48,34 +48,3 @@ interface GameCount {
 }
 
 export type {GameCount}
-
-//   export class Ball {
-//     //p5: p5;
-//     ball_x: number;
-//     ball_y: number;
-//     ball_direction_x: number;
-//     ball_direction_y: number;
-//     ball_radius: number;
-  
-//     constructor(ball_x: number, ball_y: number, ball_direction_x: number, ball_direction_y: number, ball_radius: number) {
-//       //this.p5 = p5;
-//       this.ball_x = ball_x;
-//       this.ball_y = ball_y;
-//       this.ball_direction_x = ball_direction_x;
-//       this.ball_direction_y = ball_direction_y;
-//       this.ball_radius = ball_radius;
-//     }
-  
-//     // move(y: number) {
-//     //   this.y = y;
-//     // }
-  
-//     show() {
-//       //this.p5.rect(this.x, this.y, this.width, this.height);
-//     }
-
-//     test(p5: p5) {
-//         this.show();
-//     }
-      
-//   }

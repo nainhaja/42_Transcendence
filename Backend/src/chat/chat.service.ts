@@ -1,8 +1,8 @@
 import { HttpStatus, Injectable, Res } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { UpdateChatDto } from './dto/update-chat.dto';
+
 import { PrismaService } from "src/prisma/prisma.service";
-import { TypeChat} from '@prisma/client';
+import { ACCESS} from '@prisma/client';
 import { Server, Socket } from "socket.io";
 
 @Injectable()
@@ -14,20 +14,20 @@ export class ChatService {
         members: string[], password: string, server: Server, client: Socket) {
         let access = null;
         if (type === 'private')
-            access = TypeChat.PRIVATE
+            access = ACCESS.PRIVATE
         else if (type === 'public')
-            access = TypeChat.PUBLIC
+            access = ACCESS.PUBLIC
         else if (type === 'protected')
-            access = TypeChat.PROTECTED
+            access = ACCESS.PROTECTED
         else if (type === 'direct')
-            access = TypeChat.DM //TODO:Must change to DM 
+            access = ACCESS.DM //TODO:Must change to DM 
         else
           return  client.emit('roomnotcreated', roomname);
 
         if (password !== null &&  password !== undefined) {
             password = password; //TODO: must encrypt password 
         }
-        let channel = await this.prisma.chat.create({
+        let channel = await this.prisma.room.create({
             data: {
                 type: access,
                 name: roomname,

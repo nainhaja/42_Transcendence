@@ -15,8 +15,8 @@ import { stat } from "fs";
 import  Spectator  from './spectator_mod';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BackGround from '../pages/background.jpg'
-import Sidebar from './Sidebar'
-import avatar1 from "./Assets/question.jpg";
+import Sidebar from './../pages/Sidebar'
+import avatar1 from "./../Assets/question.jpg";
 
   
   // await axios.get( process.env.REACT_APP_BACKEND_URL+ "/chat/myChannels", 
@@ -88,7 +88,7 @@ const SketchPong = () => {
   useEffect(() => {
 
 
-    socket.current = io("http://10.12.2.1:4000", {
+    socket.current = io("http://localhost:4000", {
       withCredentials: true,
     }).on("connect", () => {
 
@@ -475,9 +475,6 @@ const SketchPong = () => {
     
       <div className="flex flex-row h-full w-full ">
               
-          <div className=" w-1/6 flex h-screen bg-black text-white items-center justify-center">
-            <Sidebar/>
-          </div>
         <div className="flex flex-col items-center justify-center  w-5/6  bg-mine-520">
           <div className="flex text-white font-sans text-6xl my-6"> Game </div>
           <div className="flex flex-col justify-center items-center w-5/6 h-4/6">

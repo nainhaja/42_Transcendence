@@ -12,10 +12,10 @@ const auth_module_1 = require("./auth/auth.module");
 const user_module_1 = require("./user/user.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const config_1 = require("@nestjs/config");
-const app_module_1 = require("./game/app.module");
 const chat_module_1 = require("./chat/chat.module");
 const app_gateway_1 = require("./app.gateway");
 const user_service_1 = require("./user/user.service");
+const app_module_1 = require("./game/app.module");
 const jwt_1 = require("@nestjs/jwt");
 let AppModule = class AppModule {
 };
@@ -28,8 +28,8 @@ AppModule = __decorate([
             auth_module_1.AuthModule,
             user_module_1.UsersModule,
             app_module_1.GameModule,
-            chat_module_1.ChatModule,
             prisma_module_1.PrismaModule,
+            chat_module_1.ChatModule,
             jwt_1.JwtModule,
         ],
         providers: [app_gateway_1.AppGateway, user_service_1.UserService, config_1.ConfigService]

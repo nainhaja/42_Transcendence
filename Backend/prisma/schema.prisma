@@ -27,51 +27,51 @@ model User {
   win_streak Int
 
   achievements Achievement[]
+  
+  blocked User[] @relation("blocked")
+  blockedRelation User[] @relation("blocked")
 
-  chats ChatUser[]
-  messages MessageUser[]
+  chats RoomUser[]
   player1 Game[] @relation("player1")
   player2 Game[] @relation("player2")
   friends User[] @relation("friends")
   friendsRelation User[] @relation("friends")
 }
 
-model Chat{
+model Room{
   id Int @id @default(autoincrement())
-  name String?
-  type TypeChat
+  name String
+  type ACCESS
   password String?
 
-  users ChatUser[]
-  messages MessageUser[]
+  users RoomUser[]
 }
 
-model ChatUser{
-  chat_id Int
-  chat Chat @relation(fields: [chat_id], references: [id])
+model RoomUser{
+  Room_id Int
+  chat Room @relation(fields: [Room_id], references: [id])
   user_id String
   user User @relation(fields: [user_id], references: [id])
   role Role
-  is_muted Boolean
-  mute_time MuteTime?
+
+  mute_time DateTime
   is_banned Boolean
 
-  @@id([chat_id, user_id])
+  @@id([Room_id, user_id])
 }
 
-
-
-
-
 model MessageUser{
-  chat_id Int
-  chat Chat @relation(fields: [chat_id], references: [id])
-  user_id String
-  user User @relation(fields: [user_id], references: [id])
-  text String
-  time DateTime @default(now())
+  Message_id Int @id @default(autoincrement())
+  room_id Int
 
-  @@id([chat_id, user_id])
+  user_id String
+
+  avatar String
+
+  username String
+
+  content String
+  time DateTime @default(now())
 }
 
 model Game{
@@ -80,8 +80,8 @@ model Game{
   user1 User  @relation("player1",fields: [user1_id], references: [id])
   user2_id String
   user2 User @relation("player2",fields: [user2_id], references: [id])
-  user1_score Int?
-  user2_score Int?
+  user1_score Int
+  user2_score Int
   time DateTime @default(now())
   mode ModeGame
   status StatusGame
@@ -93,7 +93,7 @@ enum Role{
   MEMBER
 }
 
-enum TypeChat{
+enum ACCESS{
   PUBLIC
   PRIVATE
   PROTECTED

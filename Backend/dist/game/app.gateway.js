@@ -757,7 +757,7 @@ AppGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(4000, {
         cors: {
             credentials: true,
-            origin: 'http://10.12.2.1:3000',
+            origin: 'http://localhost:3000',
         }
     }),
     __metadata("design:paramtypes", [jwt_1.JwtService, prisma_service_1.PrismaService])

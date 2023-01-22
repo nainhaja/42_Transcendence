@@ -1,21 +1,21 @@
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
-import { User } from "@prisma/client";
+import { UserDto } from "src/user/dto";
 export declare class AuthService {
     private prisma;
     private config;
     private jwt;
     constructor(prisma: PrismaService, config: ConfigService, jwt: JwtService);
     login(req: any, res: any): Promise<void>;
-    generate_2fa_secret(user: User, res: any): Promise<{
+    generate_2fa_secret(user_req: UserDto, res: any): Promise<{
         secret: string;
         otpauthUrl: string;
     }>;
-    save_secret_db(user: User, secret: string): Promise<void>;
-    pipeQrCodeStream(res: any, otpauthUrl: string): Promise<any>;
-    enable_2fa(user: User, res: any): Promise<void>;
-    disable_2fa(user: User, res: any): Promise<void>;
-    verify_2fa(req: any, res: any, param: any): Promise<void>;
-    get_user(req_id: string): Promise<User>;
+    save_secret_db(user: any, secret: string): Promise<void>;
+    generate_qr_code(user_obj: any, res: any): Promise<any>;
+    enable_2fa(user_req: any, res: any): Promise<void>;
+    disable_2fa(user_req: UserDto, res: any): Promise<void>;
+    verify_2fa(param: any, res: any): Promise<void>;
+    get_user(req_id: string): Promise<import(".prisma/client").User>;
 }

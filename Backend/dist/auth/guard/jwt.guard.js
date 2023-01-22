@@ -28,7 +28,7 @@ let JwtGuard = class JwtGuard {
             return user_obj ? true : false;
         }
         catch (_a) {
-            throw ("Invalid Access Token!");
+            throw new common_1.HttpException("Invalid access token!", common_1.HttpStatus.UNAUTHORIZED);
         }
     }
 };

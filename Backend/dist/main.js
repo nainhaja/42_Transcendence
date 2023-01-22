@@ -17,7 +17,7 @@ let VersionHeaderInterceptor = class VersionHeaderInterceptor {
         if (context.getType() === 'http') {
             const http = context.switchToHttp();
             const response = http.getResponse();
-            response.setHeader('Access-Control-Allow-Origin', 'http://10.12.2.1:3000');
+            response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             response.setHeader('Access-Control-Allow-Credentials', 'true');
         }
         return next.handle();
@@ -39,7 +39,7 @@ async function bootstrap() {
     swagger_1.SwaggerModule.setup('api', app, document);
     app.useGlobalInterceptors(new VersionHeaderInterceptor());
     app.enableCors({
-        origin: 'http://10.12.2.1:3000',
+        origin: 'http://localhost:3000',
         methods: ["GET", "PATCH", "POST", "PUT", "DELETE"],
         credentials: true,
         allowedHeaders: ["cookie", "Cookie", "authorization", "Authorization", "content-type"],

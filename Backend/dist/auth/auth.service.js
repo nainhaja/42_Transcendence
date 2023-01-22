@@ -20,6 +20,7 @@ const otplib_1 = require("otplib");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const qrcode_1 = require("qrcode");
+const dto_1 = require("../user/dto");
 let AuthService = class AuthService {
     constructor(prisma, config, jwt) {
         this.prisma = prisma;
@@ -31,11 +32,6 @@ let AuthService = class AuthService {
             const payload = {
                 id: req.user.id,
             };
-            console.log("zabiiii" + this.prisma.user.count({
-                where: {
-                    id: req.user.id,
-                }
-            }));
             const nb_user = await this.prisma.user.count({
                 where: {
                     id: req.user.id,
@@ -64,32 +60,42 @@ let AuthService = class AuthService {
                     secret: secret,
                 });
                 res.cookie('access_token', access_token, { httpOnly: true }).status(200);
-                res.json({ message: "success!" });
+                req.res.redirect(this.config.get('LOCAL_URL'));
             }
             else if (nb_user === 1) {
+                const user = await this.prisma.user.findUnique({
+                    where: {
+                        id: req.user.id,
+                    }
+                });
                 const secret = this.config.get('JWT_SECRET');
                 const access_token = await this.jwt.sign(payload, {
                     expiresIn: '1d',
                     secret: secret,
                 });
-                req.res.cookie('access_token', access_token, {
-                    httpOnly: true,
-                    path: '/',
-                });
-                req.res.redirect(`http://10.12.2.1:3000/`);
+                if (user.is_two_fa_enable) {
+                    req.res.redirect(this.config.get('LOCAL_URL') + "verify_2fa/" + user.id);
+                }
+                else {
+                    res.cookie('access_token', access_token, { httpOnly: true }).status(200);
+                    await this.prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            status: client_1.UserStatus.ON,
+                        }
+                    });
+                    req.res.redirect(this.config.get('LOCAL_URL'));
+                }
             }
         }
-        catch (error) {
-            console.log("my error uis " + error);
+        catch (_a) {
             throw new common_1.HttpException("Login failed!", 400);
         }
     }
-    async generate_2fa_secret(user, res) {
-        if (await this.prisma.user.findUnique({
-            where: {
-                id: user.id,
-            }
-        })) {
+    async generate_2fa_secret(user_req, res) {
+        try {
+            const user = await this.get_user(user_req.id);
+            console.log(user);
             this.enable_2fa(user, res);
             const secret = otplib_1.authenticator.generateSecret();
             const otpauthUrl = otplib_1.authenticator.keyuri(user.email, this.config.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'), secret);
@@ -99,7 +105,7 @@ let AuthService = class AuthService {
                 otpauthUrl
             });
         }
-        else {
+        catch (_a) {
             throw new common_1.HttpException("User not found!", 400);
         }
     }
@@ -111,15 +117,15 @@ let AuthService = class AuthService {
             }
         });
     }
-    async pipeQrCodeStream(res, otpauthUrl) {
+    async generate_qr_code(user_obj, res) {
+        const { otpauthUrl } = await this.generate_2fa_secret(user_obj, res);
         return (0, qrcode_1.toFileStream)(res, otpauthUrl);
     }
-    async enable_2fa(user, res) {
+    async enable_2fa(user_req, res) {
         try {
-            console.log("50 cent " + user.is_two_fa_enable);
+            const user = await this.get_user(user_req.id);
             if (user.is_two_fa_enable === true) {
-                console.log("ALREADY ENABLE AZEBI");
-                res.json({ message: "2fa is already enabled!" });
+                throw new common_1.HttpException("2FA Already Enabled!", 400);
             }
             else {
                 const updated_user = await this.prisma.user.update({
@@ -134,11 +140,11 @@ let AuthService = class AuthService {
             throw new common_1.HttpException("Failed to enable 2fa!", 400);
         }
     }
-    async disable_2fa(user, res) {
+    async disable_2fa(user_req, res) {
         try {
-            console.log("nizar l3azi : " + user.username + " zbi " + user.is_two_fa_enable);
+            const user = await this.get_user(user_req.id);
             if (user.is_two_fa_enable === false) {
-                res.json({ message: "2fa is already disabled!" });
+                throw new common_1.HttpException("2FA Already Disabled!", 400);
             }
             else {
                 const updated_user = await this.prisma.user.update({
@@ -154,9 +160,8 @@ let AuthService = class AuthService {
             throw new common_1.HttpException("Failed to disable 2fa!", 400);
         }
     }
-    async verify_2fa(req, res, param) {
-        console.log("3fa dkhl");
-        const user = await this.get_user(req.user_obj.id);
+    async verify_2fa(param, res) {
+        const user = await this.get_user(param.userId);
         if (user.is_two_fa_enable === false) {
             throw new common_1.HttpException("2fa is not enable!", 400);
         }
@@ -164,14 +169,24 @@ let AuthService = class AuthService {
             token: param.two_fa_code,
             secret: user.two_fa_code,
         });
-        console.log("zabi  =" + param.two_fa_code);
-        console.log("zebi 2 = " + user.two_fa_code);
         if (!is_2fa_code_valid) {
-            console.log("code ghalet");
             throw new common_1.HttpException("Invalid 2fa code!", 400);
         }
-        else
-            console.log("code sa7i7 " + user.two_fa_code);
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                status: client_1.UserStatus.ON,
+            }
+        });
+        const payload = {
+            id: user.id,
+        };
+        const secret = this.config.get('JWT_SECRET');
+        const access_token = await this.jwt.sign(payload, {
+            expiresIn: '1d',
+            secret: secret,
+        });
+        res.cookie('access_token', access_token, { httpOnly: true });
         res.json({ message: "2fa code is valid!" });
     }
     async get_user(req_id) {
@@ -193,15 +208,15 @@ __decorate([
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "generate_2fa_secret", null);
 __decorate([
-    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
-], AuthService.prototype, "pipeQrCodeStream", null);
+], AuthService.prototype, "generate_qr_code", null);
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -211,15 +226,14 @@ __decorate([
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "disable_2fa", null);
 __decorate([
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, common_1.Param)()),
     __param(1, (0, common_1.Res)()),
-    __param(2, (0, common_1.Param)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "verify_2fa", null);
 AuthService = __decorate([

@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
@@ -16,7 +16,7 @@ export class JwtGuard implements CanActivate {
             return user_obj ? true : false;
         }
         catch{
-            throw ("Invalid Access Token!");
+            throw new HttpException("Invalid access token!", HttpStatus.UNAUTHORIZED);
         }
     }
 }

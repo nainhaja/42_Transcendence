@@ -13,4 +13,5 @@ export declare class UserDto {
     score: number;
     achievements: Achievement[];
     friends: User[];
+    blocked: User[];
 }

@@ -20,46 +20,21 @@ const user_service_1 = require("./user.service");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 const platform_express_1 = require("@nestjs/platform-express");
-const prisma_service_1 = require("../prisma/prisma.service");
 let UserController = class UserController {
-    constructor(prisma, userService) {
-        this.prisma = prisma;
+    constructor(userService) {
         this.userService = userService;
     }
     signin(req) {
-        this.userService.edit_user_status(req.user_obj, client_1.UserStatus.ON);
         return req.user_obj;
     }
-    change_username(req, new_username, res) {
-        console.log("here");
-        return this.userService.change_username(req.user_obj, new_username, res);
+    change_full_name(req, new_full_name, res) {
+        return this.userService.change_full_name(req.user_obj, new_full_name, res);
     }
-    async add_friend(req, param, res) {
-        const new_user = await this.prisma.user.findUnique({
-            where: {
-                id: req.user_obj.id
-            },
-        });
-        return this.userService.add_friend(new_user, param.friend_name, res);
-    }
-    async get_which_one(req, param, res) {
-        const new_user = await this.prisma.user.findUnique({
-            where: {
-                id: req.user_obj.id
-            },
-        });
-        return this.userService.get_which_friend(new_user, param.whichone, res);
-    }
-    async upload(req, file) {
-        let file_name = file.originalname;
-        console.log(file_name);
-        return await this.userService.upload(req.user_obj, file);
-    }
-    get_username(req, res) {
-        return this.userService.get_username(req.user_obj, res);
-    }
-    get_user(query, req, res) {
+    get_user(req, res) {
         return this.userService.get_user_all(req.user_obj, res);
+    }
+    get_me(req, res) {
+        return this.userService.get_me(req.user_obj, res);
     }
     get_user_score(req, res) {
         return this.userService.get_user_score(req.user_obj, res);
@@ -80,6 +55,30 @@ let UserController = class UserController {
     get_user_friends(req, res) {
         return this.userService.get_user_friends(req.user_obj, res);
     }
+    add_friend(req, param, res) {
+        return this.userService.add_friend(req.user_obj, param.friend_name, res);
+    }
+    remove_friend(req, param, res) {
+        return this.userService.remove_friend(req.user_obj, param.friend_name, res);
+    }
+    block_friend(req, param, res) {
+        return this.userService.block_friend(req.user_obj, param.friend_name, res);
+    }
+    unblock_friend(req, param, res) {
+        return this.userService.unblock_friend(req.user_obj, param.friend_name, res);
+    }
+    get_friends(req, res) {
+        return this.userService.get_friends(req.user_obj, res);
+    }
+    status_friend(req, param, res) {
+        return this.userService.status_friend(req.user_obj, param.friend_name, res);
+    }
+    async get_which_one(req, param, res) {
+        return this.userService.get_which_friend(req.user_obj, param.whichone, res);
+    }
+    async upload(req, file) {
+        return await this.userService.upload(req.user_obj, file);
+    }
 };
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
@@ -91,72 +90,32 @@ __decorate([
 ], UserController.prototype, "signin", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Post)('edit_username/:new_username'),
+    (0, common_1.Post)('edit_full_name/:new_full_name'),
     __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Param)('new_username')),
+    __param(1, (0, common_1.Param)('new_full_name')),
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", void 0)
-], UserController.prototype, "change_username", null);
+], UserController.prototype, "change_full_name", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Post)('add_friend/:friend_name'),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Param)()),
-    __param(2, (0, common_1.Res)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "add_friend", null);
-__decorate([
-    (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Get)('user/:whichone'),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Param)()),
-    __param(2, (0, common_1.Res)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "get_which_one", null);
-__decorate([
-    (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Post)('upload/'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.UploadedFile)(new common_1.ParseFilePipeBuilder()
-        .addFileTypeValidator({
-        fileType: '.(png|jpeg|jpg|gif|svg|bmp|webp)',
-    })
-        .addMaxSizeValidator({
-        maxSize: 10 * 1000000,
-    })
-        .build({
-        errorHttpStatusCode: common_1.HttpStatus.UNAUTHORIZED,
-    }))),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "upload", null);
-__decorate([
-    (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Get)('username'),
+    (0, common_1.Get)('user'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
-], UserController.prototype, "get_username", null);
+], UserController.prototype, "get_user", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Get)('user'),
-    __param(0, (0, common_1.Query)()),
-    __param(1, (0, common_1.Req)()),
-    __param(2, (0, common_1.Res)()),
+    (0, common_1.Get)('me'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
-], UserController.prototype, "get_user", null);
+], UserController.prototype, "get_me", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
     (0, common_1.Get)('user_score'),
@@ -168,7 +127,7 @@ __decorate([
 ], UserController.prototype, "get_user_score", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Get)('logout'),
+    (0, common_1.Post)('logout'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
@@ -186,7 +145,6 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
     (0, common_1.Get)('achievements'),
-    (0, common_1.Header)('Access-Control-Allow-Origin', '*'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -210,14 +168,99 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "get_user_friends", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Post)('add_friend/:friend_name'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "add_friend", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Post)('remove_friend/:friend_name'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "remove_friend", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Post)('block_friend/:friend_name'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "block_friend", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Post)('unblock_friend/:friend_name'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "unblock_friend", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Get)('get_friends'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "get_friends", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Get)('status_friend/:friend_name'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "status_friend", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Get)('user/:whichone'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "get_which_one", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Post)('upload'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.UploadedFile)(new common_1.ParseFilePipeBuilder()
+        .addFileTypeValidator({
+        fileType: '.(png|jpeg|jpg|gif|svg|bmp|webp)',
+    })
+        .addMaxSizeValidator({
+        maxSize: 10 * 1000000,
+    })
+        .build({
+        errorHttpStatusCode: common_1.HttpStatus.UNAUTHORIZED,
+    }))),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "upload", null);
 UserController = __decorate([
     (0, swagger_1.ApiTags)('user'),
     (0, common_1.UseGuards)(guard_2.LocalAuthGuard),
     (0, common_1.Controller)('user'),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, user_service_1.UserService])
+    __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 exports.UserController = UserController;
-function Use(arg0) {
-    throw new Error('Function not implemented.');
-}
 //# sourceMappingURL=user.controller.js.map

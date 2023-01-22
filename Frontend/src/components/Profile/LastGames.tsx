@@ -2,6 +2,7 @@ import React from "react";
 import fireEmoji from "../../Assets/fire-emoji.png";
 
 const LastGames = () => {
+    
   return (
     <div className="w-[674px] h-[377px] relative">
       <textarea

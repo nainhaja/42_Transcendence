@@ -74,5 +74,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], UserDto.prototype, "friends", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], UserDto.prototype, "blocked", void 0);
 exports.UserDto = UserDto;
 //# sourceMappingURL=user.dto.js.map

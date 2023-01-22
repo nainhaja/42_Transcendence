@@ -155,7 +155,7 @@ class props {
 @WebSocketGateway(3080, { 
     cors: {
       credentials: true,
-    origin: 'http://10.12.2.1:3000',
+    origin: 'http://localhost:3000',
     }
   })
 

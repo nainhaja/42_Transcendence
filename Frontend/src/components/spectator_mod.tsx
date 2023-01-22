@@ -14,7 +14,7 @@ import { stat } from "fs";
 import './../index.css';
 import './../App.css';
 import BackGround from '../pages/background.jpg'
-import Sidebar from "./Sidebar";
+import Sidebar from "./../pages/Sidebar";
 interface live_games {
     count: number;
 }
@@ -83,7 +83,7 @@ const Spectator = () => {
   }
 
   useEffect(() => {
-    socket.current = io("http://10.12.2.1:4000").on("connect", () => {
+    socket.current = io("http://localhost:4000").on("connect", () => {
 
       
       socket.current?.on("gameCount", (data) => {

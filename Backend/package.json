@@ -8,8 +8,8 @@
   "scripts": {
     "prisma": "npx prisma studio",
     "prisma:dev:deploy": "npx prisma migrate deploy",
-    "db:dev:up": "sudo docker-compose up pg_db",
-    "db:dev:rm": "sudo docker-compose rm pg_db -s -f -v ",
+    "db:dev:up": "docker compose up pg_db -d",
+    "db:dev:rm": "docker compose rm pg_db -s -f -v ",
     "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && sleep 3 && npm run prisma:dev:deploy",
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -44,7 +44,6 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
     "cuid": "^2.1.8",
     "deepai": "^1.0.21",
     "express": "^4.18.2",
@@ -55,9 +54,9 @@
     "qrcode": "^1.5.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.2",
-    "rxjs-compat": "^6.6.7",
+    "rxjs": "^7.2.0",
     "sharp": "^0.31.2",
+    "socket.io": "^4.5.4",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -71,7 +70,6 @@
     "@types/node": "^16.18.4",
     "@types/passport-jwt": "^3.0.7",
     "@types/passport-local": "^1.0.34",
-    "@types/socket.io": "^3.0.2",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

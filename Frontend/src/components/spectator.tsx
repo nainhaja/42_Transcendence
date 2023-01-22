@@ -8,6 +8,7 @@ import { io, Socket } from "socket.io-client";
 import './../index.css';
 import './../App.css';
 import axios from "axios";
+import avatar1 from "./../Assets/2130248.png";
 
 interface for_spect 
 {
@@ -37,7 +38,7 @@ const Spect = () => {
   const [index, setIndex] = useState(-1);
 
   useEffect(() => {
-    axios.get("http://10.12.2.1:5000/user/user", {withCredentials: true})
+    axios.get("http://localhost:5000/user/user", {withCredentials: true})
     .then((response) =>{
         console.log("nigga" + response.status)
         SetUser(response.data);
@@ -46,7 +47,7 @@ const Spect = () => {
           console.log("nigga" + error.response.status)
         });
       
-    socket.current = io("http://10.12.2.1:4000").on("connect", () => {
+    socket.current = io("http://localhost:4000").on("connect", () => {
       socket.current?.on("gameCount", (data: Array<for_spect>) => {
         spect_array.current = data;
         
@@ -105,7 +106,7 @@ const Spect = () => {
               <div className="overflow-y-hidden d-flex align-center text-center  justify-content-center">
                 <div className="mx-auto "> NO CURRENT LIVE GAMES </div>
                 <div className="">
-                  <img className="w-2/4 h-1/4 mx-auto" src="2130248.png"></img>
+                  <img className="w-2/4 h-1/4 mx-auto" src={avatar1}></img>
               </div>
               </div>
               </div>:

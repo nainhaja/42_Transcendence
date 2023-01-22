@@ -20,19 +20,19 @@ let ChatService = class ChatService {
     async CreateRoom(me, roomname, type, members, password, server, client) {
         let access = null;
         if (type === 'private')
-            access = client_1.TypeChat.PRIVATE;
+            access = client_1.ACCESS.PRIVATE;
         else if (type === 'public')
-            access = client_1.TypeChat.PUBLIC;
+            access = client_1.ACCESS.PUBLIC;
         else if (type === 'protected')
-            access = client_1.TypeChat.PROTECTED;
+            access = client_1.ACCESS.PROTECTED;
         else if (type === 'direct')
-            access = client_1.TypeChat.DM;
+            access = client_1.ACCESS.DM;
         else
             return client.emit('roomnotcreated', roomname);
         if (password !== null && password !== undefined) {
             password = password;
         }
-        let channel = await this.prisma.chat.create({
+        let channel = await this.prisma.room.create({
             data: {
                 type: access,
                 name: roomname,

@@ -499,7 +499,7 @@ class Game {
 @WebSocketGateway(4000, { 
   cors: {
     credentials: true,
-  origin: 'http://10.12.2.1:3000',
+  origin: 'http://localhost:3000',
   }
 })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect 
