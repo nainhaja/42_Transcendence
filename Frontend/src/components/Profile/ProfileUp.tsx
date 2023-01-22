@@ -20,7 +20,7 @@ const ProfileUp = () => {
   const navigate = useNavigate();
   const [Username, setUsername] = useState("");
   const [fullname, getFullname] = useState("");
-
+  const [isLogged, setisLogged] = useState("");
   
   const [mee, itsmee] = useState("");
   const [check, Setcheck] = useState("");
@@ -122,6 +122,7 @@ const ProfileUp = () => {
         SetUser(response.data);
         setUsername(response.data.username);
         getFullname(response.data.full_name);
+        setisLogged(response.data.status);
 
       }).catch(error => {
         Swal.fire({
@@ -184,9 +185,13 @@ const ProfileUp = () => {
               </button>
             </div>
             <div>
-              <button onClick={ButtonisPressed} type="button" className="transition duration-300 ease-in-out align-center w-full justify-center items-center"> 
-                  Invite To A Game
-              </button>
+              <>
+              { isLogged == "ON" ?
+                <button onClick={ButtonisPressed} type="button" className="transition duration-300 ease-in-out align-center w-full justify-center items-center"> 
+                    Invite To A Game
+                </button> : <></>
+              }
+              </>
             </div>
           </div>
         )
