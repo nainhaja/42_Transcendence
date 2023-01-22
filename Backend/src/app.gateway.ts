@@ -197,7 +197,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         {
             if (user.status === "OFF")
             {
-                console.log("Wa qwada hadi");
+                //console.log("Wa qwada hadi");
                 await this.prismaService.user.update({
                     where : {id: user.id},
                     data: {
@@ -215,7 +215,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
                 this.my_users[0].username = user.username;
                 this.my_users[0].user_status = user.status;
                 this.my_users[0].room = user.id;
-                console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[0].socket_ids[0]+this.my_users[0].user_status);
+               // console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[0].socket_ids[0]+this.my_users[0].user_status);
                 this.my_unique_users.push(new user_info());
                 this.my_unique_users[0].user_set_all(user);
 
@@ -243,7 +243,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
                 }
                 this.my_users[i].socket_ids.push(client.id);
-                console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[i].socket_ids[0]+this.my_users[i].user_status);                
+                //console.log("M3lem wslti hna a "+user.username+" Mol had socket " +this.my_users[i].socket_ids[0]+this.my_users[i].user_status);                
                 client.join(this.my_users[i].room);
                 //this.my_users[0].emitting_events();
             }

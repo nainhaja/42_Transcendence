@@ -84,6 +84,9 @@ const SketchPong = () => {
     setState("Ended");
   }
 
+  function buttonPressed_2() {
+    //setState("Ended");
+  }
 
   useEffect(() => {
 
@@ -326,7 +329,7 @@ const SketchPong = () => {
             p5.textAlign(p5.CENTER);
             const scores = gameState.current.scores;
             const scoresSum = scores[0] + scores[1];
-            
+              setState("Ended");
               // this is in case it's a spectator he can only watch without interfering in the game because his id couldn't be find 
               // in the players id array 
               p5.text("Game Ended Winner is "+gameState.current.winner_name,
@@ -440,7 +443,11 @@ const SketchPong = () => {
           
         }
         else if (gameState.current.state === "ended")
-          draw_Game_ended(p5);
+        {
+
+           draw_Game_ended(p5);
+        }
+         
         else
         {
           drawClickToStartText(p5);
@@ -480,14 +487,29 @@ const SketchPong = () => {
           <div className="flex flex-col justify-center items-center w-5/6 h-4/6">
             <Show_users_props/>
             <Sketch setup={setup} draw={draw} />
-            <a href="/"> <button onClick={() => {
-            //alert()
-            buttonPressed();
-          }}
-          >
-            Quit Game
-          </button>
-          </a>
+            <>{ state !== "Ended" ?
+              
+            
+                <a href="/"> <button onClick={() => {
+                //alert()
+                buttonPressed();
+              }}
+              >
+                Quit Game
+              </button>
+              </a>
+              :
+              <a href="/"> <button onClick={() => {
+                //alert()
+                buttonPressed_2();
+              }}
+              >
+                Go back to menu
+              </button>
+              </a>
+
+          }
+          </>
           </div>
 
                    

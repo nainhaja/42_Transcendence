@@ -36,6 +36,8 @@ const Spect = () => {
   const [live_qs, setLayhfdk] = useState(0);
   const [User, SetUser] = useState<any>({});
   const [index, setIndex] = useState(-1);
+  const [player, setPlayer] = useState("");
+  
 
   useEffect(() => {
     axios.get("http://localhost:5000/user/user", {withCredentials: true})
@@ -57,17 +59,22 @@ const Spect = () => {
           let p=0;
           for(let p=0;p< spect_array.current.length ; p++)
           {
-            if (spect_array.current[p].user_1_name === User.username || spect_array.current[p].user_1_name === User.username)
+            if (spect_array.current[p].user_1_name === User.username || spect_array.current[p].user_2_name === User.username)
             {
-              setIndex(spect_array.current[p].index);
+              setIndex(+spect_array.current[p].index);
+              setPlayer(spect_array.current[p].user_1_name);
+              console.log("Rani hna brb "+spect_array.current[p].index);
               break;
             }
           }
- 
+          console.log("Ya zbi ha lindex"+index);
           let len_x = spect_array.current?.length;
           setLayhfdk(+len_x);
         }
       });
+
+
+
       setState("started watching");
       socket.current?.on("queue_status", (data: GameState) => {
         gameState.current = data;
@@ -116,7 +123,7 @@ const Spect = () => {
         className=" h-3/12 px-[1.5rem] scrollbar-hide overflow-hidden overflow-y-scroll py-[1rem] rounded-[20px] flex flex-col  bg-[#262626] text-white text-[24px] mb-[12px] font-[600]"> 
         {Array.from({ length: live_qs}, (v, i) => i + 1).map(i => (
           <>
-          {index === i ? 
+          {player !== user_arr[i-1].user_1_name &&  player !== user_arr[i-1].user_2_name? 
             <a href={`/watch/${i}`} className=" bg-[#1F9889] flex flex-row  rounded-full  text-base my-5 items-center hover:bg-[#C66AE1] text-center">
             
                 <div className="h-5/6 w-6/12 flex  flex-row text-white text-base text-center">

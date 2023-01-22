@@ -12,7 +12,6 @@ const passport_1 = require("@nestjs/passport");
 let LocalAuthGuard = class LocalAuthGuard extends (0, passport_1.AuthGuard)('local') {
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
-        console.log(request.cookies);
         if (request.cookies['access_token']) {
             console.log('in');
             return true;

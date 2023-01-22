@@ -48,7 +48,6 @@ let UserService = class UserService {
                 id: user_obj.id,
             }
         });
-        console.log("ayoub dima khdam : " + user.username);
         res.json(user);
     }
     async get_me(user_obj, res) {

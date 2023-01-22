@@ -41,6 +41,9 @@ const Spectator = () => {
   const [my_width, setWidth] = useState(window.innerWidth);
   const [m_height, setHeight] = useState(window.innerHeight);
 
+
+  const [spect_game, setSpect_Game] = useState(0);
+
   const getWindowSizee = () => {
     const { innerWidth, innerHeight } = window;
     return { innerWidth, innerHeight };
@@ -94,6 +97,10 @@ const Spectator = () => {
         //console.log("nadi " + layhfdk);
       });
 
+      socket.current?.on("spect_game_ended", (data: any) => {
+        setSpect_Game(+1);
+      });   
+
       // if (Cpt === 0)
       // {
       //   console.log("wselt a 3chiri");
@@ -120,6 +127,7 @@ const Spectator = () => {
           }
           gameState.current = data;
         });        
+
 
 
       return () => {
@@ -208,6 +216,30 @@ const Spectator = () => {
         socket.current?.emit("spectJoined");
 
 
+        const draw_Game_ended = (p5: p5Types) => {
+          if (gameState.current != null && socket.current != null) {
+              
+  
+            let width = getWindowSize().innerWidth;
+            let height = getWindowSize().innerHeight;
+            
+              p5.fill(0);
+              p5.textSize(((relativeWidth) / 35));
+              p5.textAlign(p5.CENTER);
+              const scores = gameState.current.scores;
+              const scoresSum = scores[0] + scores[1];
+              
+                // this is in case it's a spectator he can only watch without interfering in the game because his id couldn't be find 
+                // in the players id array 
+                p5.text("Game Ended Winner is "+gameState.current.winner_name,
+                  (width) / 4,
+                  width / 16
+                );
+              
+            
+          }
+  
+        };
 
         //console.log("nadi " + layhfdk); 
         p5.resizeCanvas(window.innerWidth /2 , window.innerWidth/4);
@@ -355,25 +387,29 @@ const Spectator = () => {
             //console.log("Asbhan lah " + gameState.current.state);
             // p5.resizeCanvas(getWindowSize().innerWidth   , relativeHeight);
             // p5.background(122);
-            drawClickToStartText(p5);
-            drawScore(p5);
+            if (spect_game === 0)
+            {
+              drawClickToStartText(p5);
+              p5.fill(0);
+              //drawScore(p5);
             //console.log("Heres my aspect ratio " + aspectRatio);
             // i want to use href with buttons inside of a loop that will redirect me to a certain page with a certain  index
             //the p5.rect method allows us to create a rectangle using the properties in the arguments x,y,width,heigh
-            p5.rect(gameState.current.fr_paddle_x * scalingRatio, gameState.current.fr_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
+             p5.rect(gameState.current.fr_paddle_x * scalingRatio, gameState.current.fr_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
       
-            p5.rect(gameState.current.sec_paddle_x * scalingRatio, gameState.current.sec_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
+              p5.rect(gameState.current.sec_paddle_x * scalingRatio, gameState.current.sec_paddle_y * scalingRatio, gameState.current.paddle_width * scalingRatio, gameState.current.paddle_height * scalingRatio);
             //the p5.circle method allows us to create a circle using the properties in the arguments x,y,Raduis
-            p5.circle(gameState.current.ball_x * scalingRatio, gameState.current.ball_y * scalingRatio, gameState.current.ball_radius * scalingRatio);
+              p5.circle(gameState.current.ball_x * scalingRatio, gameState.current.ball_y * scalingRatio, gameState.current.ball_radius * scalingRatio);
+            }
+            else 
+              draw_Game_ended(p5)
+            
             }
     }
   
   //};
   return <div className="flex flex-row h-full w-full ">
               
-  <div className=" w-1/6 flex h-screen bg-black text-white items-center justify-center">
-    <Sidebar/>
-  </div>
 <div className="flex flex-col items-center justify-center  w-5/6  bg-mine-520">
   <div className="flex text-white font-sans text-6xl my-6"> Game </div>
   <div className="flex flex-col justify-center items-center w-5/6 h-4/6">

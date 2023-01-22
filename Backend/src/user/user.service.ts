@@ -37,7 +37,7 @@ export class UserService {
                 id : user_obj.id,
             }
         });
-        console.log("ayoub dima khdam : " + user.username);
+        //console.log("ayoub dima khdam : " + user.username);
         res.json(user);
     }
 
