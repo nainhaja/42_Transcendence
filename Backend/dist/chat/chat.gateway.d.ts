@@ -13,7 +13,6 @@ export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, 
     roomcount: number;
     afterInit(server: Server): void;
     handleConnection(client: Socket): Promise<void>;
-    connect(client: Socket): Promise<void>;
     handleDisconnect(client: Socket): void;
     handleLeave(client: Socket, payload: any): Promise<void>;
     create_room(client: Socket, payload: any): Promise<void>;
@@ -24,7 +23,7 @@ export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, 
     updateroomaccess(client: Socket, payload: any): Promise<void>;
     updateroomname(client: any, payload: any): Promise<void>;
     updateuserrole(client: any, payload: any): Promise<void>;
-    updaterestriction(client: Socket, payload: any): Promise<void>;
+    updaterestriction(client: Socket, payload: any): void;
     updateAllSocketRooms(client: Socket): Promise<void>;
     getUserFromSocket(socket: Socket): Promise<import(".prisma/client").User>;
     getuserSocketRoom(username: string): string;

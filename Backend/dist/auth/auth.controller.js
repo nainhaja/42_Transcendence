@@ -30,8 +30,8 @@ let AuthController = class AuthController {
     disable_2fa(req, res) {
         return this.authService.disable_2fa(req.user_obj, res);
     }
-    verify_2fa(param, res) {
-        return this.authService.verify_2fa(param, res);
+    verify_2fa(req, res, param) {
+        return this.authService.verify_2fa(req, res, param);
     }
 };
 __decorate([
@@ -45,7 +45,7 @@ __decorate([
 ], AuthController.prototype, "login", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Get)('login/2fa/enable'),
+    (0, common_1.Post)('login/2fa/enable'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -62,11 +62,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "disable_2fa", null);
 __decorate([
-    (0, common_1.Post)("login/2fa/:two_fa_code/:userId"),
-    __param(0, (0, common_1.Param)()),
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Post)("login/2fa/:two_fa_code"),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)()),
+    __param(2, (0, common_1.Param)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "verify_2fa", null);
 AuthController = __decorate([

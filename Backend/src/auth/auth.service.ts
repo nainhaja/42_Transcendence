@@ -51,36 +51,15 @@ export class AuthService {
                 req.res.redirect(this.config.get('LOCAL_URL'));
             }
             else if (nb_user === 1){
-                const user = await this.prisma.user.findUnique({
-                    where:{
-                        id : req.user.id,
-                    }
-                });
-                const secret = this.config.get('JWT_SECRET');
-                const access_token = await this.jwt.sign(payload, {
-                    expiresIn : '1d',
-                    secret : secret,
-                });
-                if (user.is_two_fa_enable) {
-                    req.res.redirect(this.config.get('LOCAL_URL') + "verify_2fa/" + user.id);
-                }
-                else {
-                    res.cookie('access_token', access_token, { httpOnly: true }).status(200);
-                    // res.send(access_token);
-                    // res.json({message :"success!"});
-                    await this.prisma.user.update({
-                        where: {id: user.id },
-                        data: {
-                            status: UserStatus.ON,
-                        }
-                    });
-                    // if (user.is_two_fa_enable === true)
-                    //     req.res.redirect(this.config.get('LOCAL_URL') + "verify_2fa");
-                    // else
-                        req.res.redirect(this.config.get('LOCAL_URL'));
-
-                }
-                
+                  const secret = this.config.get('JWT_SECRET');
+                  const access_token = await this.jwt.sign(payload, {
+                      expiresIn : '1d',
+                      secret : secret,
+                  });
+                res.cookie('access_token', access_token, { httpOnly: true }).status(200);
+                // res.send(access_token);
+                // res.json({message :"success!"});
+                req.res.redirect(this.config.get('LOCAL_URL'));
             }
         }
         catch{
@@ -119,20 +98,18 @@ export class AuthService {
         return toFileStream(res, otpauthUrl);
     }
 
-    async enable_2fa(user_req, @Res() res){
+    async enable_2fa(user, @Res() res){
         try{
-            const user = await this.get_user(user_req.id);
+            console.log(user.is_two_fa_enable);
             if (user.is_two_fa_enable === true)
-            {
-                throw new HttpException("2FA Already Enabled!", 400);
-            }                
+                res.json({message :"2fa is already enabled!"});
             else{
-            const updated_user = await this.prisma.user.update({
-                where: {id: user.id },
-                data: {
-                    is_two_fa_enable: true,
-                }
-             });
+                const updated_user = await this.prisma.user.update({
+                    where: {id: user.id },
+                    data: {
+                        is_two_fa_enable: true,
+                    }
+                  });
             }
         }
         catch{
@@ -142,11 +119,10 @@ export class AuthService {
     async disable_2fa(user_req: UserDto, @Res() res){
         try{
             const user = await this.get_user(user_req.id);
+            // console.log(user, user.is_two_fa_enable);
+            
             if (user.is_two_fa_enable === false)
-            {
-                throw new HttpException("2FA Already Disabled!", 400);
-             //   res.json({message :"2fa is already disabled!"});
-            }
+                res.json({message :"2fa is already disabled!"});
             else{
                 const updated_user = await this.prisma.user.update({
                     where: {id: user.id },
@@ -161,10 +137,9 @@ export class AuthService {
             throw new HttpException("Failed to disable 2fa!", 400);
         }
     }
-    async verify_2fa(@Param() param, @Res() res){
+    async verify_2fa(@Req() req, @Res() res, @Param() param){
         
-        const user = await this.get_user(param.userId);
-        
+        const user = await this.get_user(req.user_obj.id);
         if (user.is_two_fa_enable === false){
             throw new HttpException("2fa is not enable!", 400);
         }
@@ -172,24 +147,8 @@ export class AuthService {
             token: param.two_fa_code,
             secret: user.two_fa_code,
         });
-        if (!is_2fa_code_valid) {
+        if (!is_2fa_code_valid)
             throw new HttpException("Invalid 2fa code!", 400);
-        }
-        await this.prisma.user.update({
-            where: {id: user.id },
-            data: {
-                status: UserStatus.ON,
-            }
-          });
-        const payload = {
-            id: user.id,
-        };
-        const secret = this.config.get('JWT_SECRET');
-        const access_token = await this.jwt.sign(payload, {
-            expiresIn : '1d',
-            secret : secret,
-        });
-        res.cookie('access_token', access_token, { httpOnly: true });
         res.json({message :"2fa code is valid!"});
     }
     async get_user(req_id: string){

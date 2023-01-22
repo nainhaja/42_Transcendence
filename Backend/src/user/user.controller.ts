@@ -15,6 +15,7 @@ export class UserController {
     @UseGuards(JwtGuard)
     @Get('/')
     signin(@Req() req){
+        this.userService.edit_user_status(req.user_obj, UserStatus.ON);
         return req.user_obj;
     }
 
@@ -44,7 +45,7 @@ export class UserController {
     }
     
     @UseGuards(JwtGuard)
-    @Post('logout')
+    @Get('logout')
     logout(@Req() req, @Res({ passthrough: true }) res){
         this.userService.edit_user_status(req.user_obj, UserStatus.OFF);
         res.clearCookie('access_token');

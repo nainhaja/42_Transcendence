@@ -26,15 +26,9 @@ var NOTIF_STATUS;
 var RESTRICTION;
 (function (RESTRICTION) {
     RESTRICTION["BAN"] = "BAN";
-    RESTRICTION["KICK"] = "KICK";
     RESTRICTION["MUTE"] = "MUTE";
+    RESTRICTION["KICK"] = "KICK";
 })(RESTRICTION || (RESTRICTION = {}));
-var MUTEDURATION;
-(function (MUTEDURATION) {
-    MUTEDURATION[MUTEDURATION["FIFTEENSEC"] = 30000] = "FIFTEENSEC";
-    MUTEDURATION[MUTEDURATION["FIVEMIN"] = 300000] = "FIVEMIN";
-    MUTEDURATION[MUTEDURATION["ONEHOUR"] = 3600000] = "ONEHOUR";
-})(MUTEDURATION || (MUTEDURATION = {}));
 var ACCESS;
 (function (ACCESS) {
     ACCESS["PUBLIC"] = "PUBLIC";
@@ -42,6 +36,13 @@ var ACCESS;
     ACCESS["PROTECTED"] = "PROTECTED";
     ACCESS["DM"] = "DM";
 })(ACCESS || (ACCESS = {}));
+var MUTEDURATION;
+(function (MUTEDURATION) {
+    MUTEDURATION["HALFMIN"] = "15 SEC";
+    MUTEDURATION["MIN"] = "1 MIN";
+    MUTEDURATION["HALFHOUR"] = "30 MIN";
+    MUTEDURATION["HOUR"] = "1 HOUR";
+})(MUTEDURATION || (MUTEDURATION = {}));
 var ROLE;
 (function (ROLE) {
     ROLE["OWNER"] = "OWNER";
@@ -147,49 +148,6 @@ let ChatGateway = class ChatGateway {
             console.log('couldnt connect');
         }
     }
-    async connect(client) {
-        try {
-            const user = await this.getUserFromSocket(client);
-            console.log(user.username + " has just connected!");
-            this.userSocketMap.push(new userSocket(user.username, client));
-            let notif = new notification();
-            var sentpayload = {
-                notification: {},
-                payload: null,
-            };
-            const roomusers = await this.getAllRoomsByUserId(user.id);
-            let joinedrooms = roomusers.map((room) => {
-                room.chat['joined'] = true;
-                room.chat['lastmessage'] = '';
-                return (room.chat);
-            });
-            let allrooms = await this.getAllRooms(client);
-            for (let i = 0; i < allrooms.length; i++) {
-                let found = false;
-                for (let j = 0; j < joinedrooms.length; j++) {
-                    if (allrooms[i].id == joinedrooms[j].id) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                    joinedrooms.push(allrooms[i]);
-            }
-            sentpayload.payload = {
-                rooms: joinedrooms,
-                otherrooms: [],
-                dms: [],
-                username: user.username,
-                id: user.id,
-                fullname: user.full_name,
-                profile: user.avatar,
-            };
-            await client.emit('connection', sentpayload);
-        }
-        catch (_a) {
-            console.log('couldnt connect');
-        }
-    }
     handleDisconnect(client) {
         console.log("client has disconnected ");
         let index = this.userSocketMap.findIndex(e => e.socket == client);
@@ -197,17 +155,6 @@ let ChatGateway = class ChatGateway {
     }
     async handleLeave(client, payload) {
         try {
-            const user = await this.getUserFromSocket(client);
-            const room = await this.getRoomByRoomId(payload.roomid);
-            const deleteroomuser = await this.prismaService.roomUser.delete({
-                where: {
-                    Room_id_user_id: {
-                        Room_id: room.id,
-                        user_id: user.id,
-                    }
-                },
-            });
-            client.emit('requestroomsupdate');
         }
         catch (error) {
         }
@@ -294,9 +241,6 @@ let ChatGateway = class ChatGateway {
         try {
             const user = await this.getUserFromSocket(client);
             console.log(user.username + " : ", payload.message);
-            const roomuser = await this.getRoomUser(payload.roomid, user.id);
-            if (roomuser.mute_time.getTime() > Date.now())
-                return;
             let newmesg = { sender: user.username, messagecontent: payload.message, profile: user.avatar };
             this.userSocketMap.forEach((usersocket) => {
                 if (usersocket.currentroom == payload.roomid)
@@ -388,34 +332,38 @@ let ChatGateway = class ChatGateway {
         }
     }
     async updateroomaccess(client, payload) {
-        const user = await this.getUserFromSocket(client);
-        const roomuser = await this.prismaService.roomUser.findFirst({
-            where: {
-                AND: [
-                    { Room_id: payload.roomid },
-                    { user_id: user.id }
-                ]
-            },
-            include: {
-                chat: true,
-            }
-        });
-        let updator_role = roomuser.role;
-        let room_type = roomuser.chat.type;
-        if (updator_role !== 'OWNER' || room_type === 'DM' || room_type == payload.access) {
-            console.log('ahahahahahah something wrong!!!');
+        let notif = new notification();
+        var sentpayload = {
+            notification: {},
+            payload: null,
+        };
+        let updator_role = 'OWNER';
+        let room_type = 'PUBLIC';
+        if (updator_role !== 'OWNER' || room_type === 'DM') {
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            notif.setStatusContent('Permission Denied');
+            sentpayload.notification = notif.getNotification();
+            client.emit('access_update', sentpayload);
             return;
         }
-        const update = await this.prismaService.room.update({
-            where: {
-                id: roomuser.Room_id,
-            },
-            data: {
-                type: payload.access,
-                password: payload.password
-            }
-        });
-        this.server.emit('requestroomsupdate', null);
+        if (payload.access === 'protected' && payload.password == undefined) {
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            notif.setStatusContent('Valid Password Required');
+            sentpayload.notification = notif.getNotification();
+            client.emit('access_update', sentpayload);
+            return;
+        }
+        sentpayload.payload = { room: payload.room, newaccess: payload.access };
+        notif.setStatus(NOTIF_STATUS.UPDATE);
+        notif.setStatusContent(payload.room + ' is now ' + payload.access);
+        sentpayload.notification = notif.getNotification();
+        let roomid = this.getuserSocketRoom(payload.updater);
+        this.server.to[roomid].emit('access_update', sentpayload);
+        sentpayload.payload = null;
+        notif.setStatus(NOTIF_STATUS.SUCCESS);
+        notif.setStatusContent(payload.room + ' is now ' + payload.access);
+        sentpayload.notification = notif.getNotification();
+        client.emit('access_update', sentpayload);
     }
     async updateroomname(client, payload) {
         let notif = new notification();
@@ -452,106 +400,86 @@ let ChatGateway = class ChatGateway {
             notification: {},
             payload: null,
         };
-        try {
-            const user = await this.getUserFromSocket(client);
-            const updateduser = await this.prismaService.user.findFirst({
-                where: {
-                    username: payload.username
-                }
-            });
-            const updatorroomuser = await this.prismaService.roomUser.findFirst({
-                where: {
-                    AND: [
-                        { Room_id: payload.roomid },
-                        { user_id: user.id }
-                    ]
-                }
-            });
-            const updatedroomuser = await this.prismaService.roomUser.findFirst({
-                where: {
-                    AND: [
-                        { Room_id: payload.roomid },
-                        { user_id: updateduser.id }
-                    ]
-                }
-            });
-            let updated_role = updatedroomuser.role;
-            let updator_role = updatorroomuser.role;
-            if (updator_role !== client_1.Role.OWNER || payload.role === client_1.Role.OWNER || updated_role == client_1.Role.OWNER) {
-                notif.setStatus(NOTIF_STATUS.FAILED);
-                notif.setStatusContent('Permission Denied');
-                sentpayload.notification = notif.getNotification();
-                return;
-            }
-            const update = await this.prismaService.roomUser.update({
-                where: {
-                    Room_id_user_id: {
-                        Room_id: updatedroomuser.Room_id,
-                        user_id: updatedroomuser.user_id,
-                    }
-                },
-                data: {
-                    role: payload.role,
-                }
-            });
+        let updated_role = 'member';
+        let updator_role = 'owner';
+        if (updator_role !== 'owner' || payload.newrole === 'owner') {
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            notif.setStatusContent('Permission Denied');
+            sentpayload.notification = notif.getNotification();
+            client.emit('role_update', sentpayload);
             return;
         }
-        catch (error) {
+        if (sentpayload.payload == null) {
+            notif.setStatusContent('Try Again Later');
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            sentpayload.notification = notif.getNotification();
+            client.emit('role_update', 'Role Updated');
+        }
+        else {
+            notif.setStatus(NOTIF_STATUS.UPDATE);
+            notif.setStatusContent(updated_role + ' role Has Been Updated');
+            sentpayload.notification = notif.getNotification();
+            let roomid = this.getuserSocketRoom(payload.updator);
+            this.server.to[roomid].emit('role_update', { room: payload.room, updateduser: updated_role, newrole: payload.newrole });
         }
     }
-    async updaterestriction(client, payload) {
-        const user = await this.getUserFromSocket(client);
-        const roomuser = await this.getRoomUser(payload.roomid, user.id);
-        const restricteduser = await this.getUserByUserName(payload.username);
-        const restrictedroomuser = await this.getRoomUser(payload.roomid, restricteduser.id);
-        let restricted_role = restrictedroomuser.role;
-        let restrictor_role = roomuser.role;
-        if (restrictor_role === client_1.Role.MEMBER || restricted_role === client_1.Role.OWNER
-            || (restricted_role === client_1.Role.ADMIN && restrictor_role === client_1.Role.ADMIN)) {
+    updaterestriction(client, payload) {
+        let notif = new notification();
+        var sentpayload = {
+            notification: {},
+            payload: null,
+        };
+        let restricted_role = 'member';
+        let restrictor_role = 'owner';
+        if (restrictor_role === 'member' || restricted_role === 'owner'
+            || (restricted_role === 'admin' && restrictor_role === 'admin')) {
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            notif.setStatusContent('Permission Denied');
+            sentpayload.notification = notif.getNotification();
+            client.emit('restriction_update', sentpayload);
             return;
         }
         if (payload.restriction === RESTRICTION.BAN) {
-            const update = await this.prismaService.roomUser.update({
-                where: {
-                    Room_id_user_id: {
-                        Room_id: payload.roomid,
-                        user_id: restricteduser.id
-                    }
-                },
-                data: {
-                    is_banned: true,
-                }
-            });
+            sentpayload.payload.message = payload.updateduser + ' Has Been Banned';
+            notif.setStatusContent(payload.updateduser + ' Has Been Banned');
         }
         else if (payload.restriction === RESTRICTION.MUTE) {
-            console.log(payload.duration + '   ' + payload.restriction);
-            let newDate = new Date(Date.now() + payload.duration);
-            console.log(payload.duration + ' || ' + payload.restriction);
-            const update = await this.prismaService.roomUser.update({
-                where: {
-                    Room_id_user_id: {
-                        Room_id: payload.roomid,
-                        user_id: restricteduser.id,
-                    }
-                },
-                data: {
-                    mute_time: newDate
-                }
-            });
+            sentpayload.payload.message = payload.updateduser + ' Has Been Muted For ' + payload.muteduration;
+            notif.setStatusContent(payload.updateduser + ' Has Been Muted For ' + payload.muteduration);
         }
         else if (payload.restriction === RESTRICTION.KICK) {
-            const update = await this.prismaService.roomUser.delete({
-                where: {
-                    Room_id_user_id: {
-                        Room_id: payload.roomid,
-                        user_id: restricteduser.id
-                    }
-                },
-            });
+            sentpayload.payload.message = payload.updateduser + ' Has Been Kicked';
+            notif.setStatusContent(payload.updateduser + ' Has Been Kicked');
         }
         else {
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            notif.setStatusContent('Invalid Restriction');
+            sentpayload.notification = notif.getNotification();
+            client.emit('restriction_update', sentpayload);
+            return;
         }
-        return;
+        if (sentpayload.payload == null) {
+            notif.setStatusContent('Try Again Later');
+            notif.setStatus(NOTIF_STATUS.FAILED);
+            sentpayload.notification = notif.getNotification();
+            client.emit('restriction_updated', sentpayload);
+        }
+        else {
+            notif.setStatus(NOTIF_STATUS.UPDATE);
+            let roomid = this.getuserSocketRoom(payload.restrictor.username);
+            sentpayload.notification = notif.getNotification();
+            this.server.to[roomid].emit('restriction_updated', sentpayload);
+            sentpayload.payload = null;
+            notif.setStatusContent('You Have Banned ' + payload.updateduser + 'Successfully');
+            notif.setStatus(NOTIF_STATUS.SUCCESS);
+            sentpayload.notification = notif.getNotification();
+            client.emit('restriction_updated', sentpayload);
+            var restrictedSocket = this.getUserSocket(payload.updateduser);
+            notif.setStatusContent('You Have Been Banned');
+            notif.setStatus(NOTIF_STATUS.RESTRICTED);
+            sentpayload.notification = notif.getNotification();
+            restrictedSocket.emit('restriction_updated', sentpayload);
+        }
     }
     async updateAllSocketRooms(client) {
         try {
@@ -702,12 +630,6 @@ let ChatGateway = class ChatGateway {
     }
 };
 __decorate([
-    (0, websockets_1.SubscribeMessage)('connectpls'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket]),
-    __metadata("design:returntype", Promise)
-], ChatGateway.prototype, "connect", null);
-__decorate([
     (0, websockets_1.SubscribeMessage)('leave'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
@@ -744,7 +666,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "inviteusertoroom", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('updateaccess'),
+    (0, websockets_1.SubscribeMessage)('update_access'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
@@ -756,16 +678,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "updateroomname", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('updaterole'),
+    (0, websockets_1.SubscribeMessage)('update_role'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "updateuserrole", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('updaterestriction'),
+    (0, websockets_1.SubscribeMessage)('update_restriction'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], ChatGateway.prototype, "updaterestriction", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('updaterooms'),
@@ -778,8 +700,7 @@ ChatGateway = __decorate([
         cors: {
             credentials: true,
             origin: 'http://localhost:3000',
-        },
-        namespace: 'chat'
+        }
     }),
     __metadata("design:paramtypes", [jwt_1.JwtService, prisma_service_1.PrismaService])
 ], ChatGateway);

@@ -25,6 +25,7 @@ let UserController = class UserController {
         this.userService = userService;
     }
     signin(req) {
+        this.userService.edit_user_status(req.user_obj, client_1.UserStatus.ON);
         return req.user_obj;
     }
     change_full_name(req, new_full_name, res) {
@@ -127,7 +128,7 @@ __decorate([
 ], UserController.prototype, "get_user_score", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Post)('logout'),
+    (0, common_1.Get)('logout'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
