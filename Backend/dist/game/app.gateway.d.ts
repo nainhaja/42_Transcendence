@@ -2,7 +2,7 @@ import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs
 import { Socket, Server } from "socket.io";
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserStatus } from '@prisma/client';
+import { Achievement, UserStatus } from '@prisma/client';
 interface player_properties {
     input: string;
     id: string;
@@ -25,9 +25,14 @@ export declare class AppGateway implements OnGatewayInit, OnGatewayConnection, O
     afterInit(server: Server): void;
     handleConnection(client: Socket, payload: any): Promise<void>;
     handleDisconnect(player_ref: Socket): Promise<void>;
+    update_user_achievements(user: any, achievement: Achievement): Promise<any>;
+    user_achievements(user_id: string): Promise<void>;
     Game_stopped(player_ref: Socket): Promise<void>;
     spectJoinRoom(socket: Socket): void;
     spectJoin(socket: Socket, payload: any): void;
+    get_user(req_id: string): Promise<import(".prisma/client").User>;
+    update_user_score(user: any, score: number): Promise<import(".prisma/client").User>;
+    get_user_score(user_id: string): Promise<number>;
     GameEnded(socket: Socket, payload: any): Promise<void>;
     edit_user_status(user_id: string, status: UserStatus): Promise<void>;
     get_match_history(socket: Socket): Promise<void>;

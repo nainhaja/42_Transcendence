@@ -12,8 +12,7 @@ export const JoinPopUp = (props: any) => {
     let roomPassword = '';
     let roomAccess = '';
     useEffect(() => {
-        //props.room.password == 'Protected' ? setShowPassField(true) : setShowPassField(false);
-        //console.log(props)
+       
         setName(props.room.roomname);
         if (props.room.type == 'PROTECTED')
             setShowPassField(true);
@@ -21,10 +20,8 @@ export const JoinPopUp = (props: any) => {
 
     const handleSubmit = () => {
         if (props.room.access == 'PROTECTED' && password == '') {
-            console.log('enter password');
             return;
         }
-        console.log('password ' + password);
         props.room.password = password;
         Currentsocket.emit('joinroom', props.room);
         props.hidepopup();

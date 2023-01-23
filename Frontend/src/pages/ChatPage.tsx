@@ -36,16 +36,16 @@ export const ChatPage = () => {
             ChatData.id = p.payload.id;
             ChatData.fullName = p.payload.fullname;
             ChatData.profile = p.payload.profile;
-            console.log('wa si zaaaabi');
-    
-    
-    
-            
         });
 
-    useEffect(() => {
+        Currentsocket.on('getblocked', (payload: any) => {
+            ChatData.blockedusers = payload;
+            console.log('blocked : ', ChatData.blockedusers);
+    
+        })
 
-Currentsocket.emit('connectpls');
+    useEffect(() => {
+    Currentsocket.emit('connectpls');
     
 
     }, [])

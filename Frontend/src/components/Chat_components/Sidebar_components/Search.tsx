@@ -9,8 +9,8 @@ export const Search = () => {
     }
 
     const handleKey = (e: React.KeyboardEvent) => {
-        if (e.code === 'Enter' && roomName)
-            console.log(roomName);
+        // if (e.code === 'Enter' && roomName)
+        //     console.log(roomName);
     }
     return (
         <div className="search">

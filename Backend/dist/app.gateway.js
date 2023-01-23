@@ -17,6 +17,26 @@ const prisma_service_1 = require("./prisma/prisma.service");
 const jwt_1 = require("@nestjs/jwt");
 const client_1 = require("@prisma/client");
 ;
+class user_info_whistory {
+    constructor() {
+        this.user1_name = "";
+        this.user2_name = "";
+        this.user1_score = 0;
+        this.user2_score = 0;
+        this.user1_avatar = "";
+        this.user2_avatar = "";
+    }
+    User_get_all() {
+        return {
+            user1_name: this.user1_name,
+            user2_name: this.user2_name,
+            user1_score: this.user1_score,
+            user2_score: this.user2_score,
+            user1_avatar: this.user1_avatar,
+            user2_avatar: this.user2_avatar,
+        };
+    }
+}
 class user_info {
     constructor() {
         this.id = "";
@@ -190,7 +210,54 @@ let AppGateway = class AppGateway {
     }
     async handleDisconnect(player_ref) {
     }
-    async joinRoom(socket, payload) {
+    async get_this_user(user_id) {
+        const new_user = await this.prismaService.user.findUnique({
+            where: { id: user_id },
+        });
+        if (new_user)
+            return new_user;
+    }
+    async match_history_all(socket, payload) {
+        const user_nb = await this.prismaService.user.count({
+            where: {
+                username: payload.username,
+            },
+        });
+        if (user_nb == 0) {
+            throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
+        }
+        else {
+            const user = await this.prismaService.user.findFirst({
+                where: {
+                    username: payload.username,
+                }
+            });
+            const games = await this.prismaService.game.findMany({
+                where: {
+                    OR: [
+                        { user1: { id: user.id } },
+                        { user2: { id: user.id } }
+                    ]
+                },
+                take: 5,
+            });
+            let my_user_hiss = Array();
+            ;
+            for (let i = 0; i < games.length; i++) {
+                my_user_hiss.push(new user_info_whistory());
+                const new_user1 = await this.get_this_user(games[i].user1_id);
+                const new_user2 = await this.get_this_user(games[i].user2_id);
+                if (new_user1 && new_user2) {
+                    my_user_hiss[i].user1_name = new_user1.username;
+                    my_user_hiss[i].user2_name = new_user2.username;
+                    my_user_hiss[i].user1_avatar = new_user1.avatar;
+                    my_user_hiss[i].user2_avatar = new_user2.avatar;
+                    my_user_hiss[i].user1_score = games[i].user1_score;
+                    my_user_hiss[i].user2_score = games[i].user2_score;
+                }
+            }
+            this.server.emit("match_history", my_user_hiss);
+        }
     }
     async getUserFromSocket(socket) {
         const cookies = socket.handshake.headers.cookie;
@@ -214,11 +281,11 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AppGateway.prototype, "inviting_game", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('user_joined_room'),
+    (0, websockets_1.SubscribeMessage)('get_match_history'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
-], AppGateway.prototype, "joinRoom", null);
+], AppGateway.prototype, "match_history_all", null);
 AppGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(3080, {
         cors: {

@@ -1,3 +1,4 @@
+import { current } from "@reduxjs/toolkit";
 import React, { useEffect, useState } from "react";
 import { ChatData, Currentsocket } from "../../context/ChatUserContext";
 
@@ -33,19 +34,23 @@ export const Chat = () => {
         ChatData.activeRoomName = payload.room.name;
         ChatData.activeRoomType = payload.room.type; 
         ChatData.activeRoomRole = payload.room.role;
-
-        // console.log('you have entered this chat');
-        // console.log(payload.room.name);
-        // console.log('');
-        // console.log('');
-        // console.log('');
-        // console.log(JSON.stringify(payload));
-        //setRooms([payload.payload.room, ...rooms]);
         setMessages(payload.messages);
         setIsActivate(true);
         activate = true;
        // setMessages([...messages, message]);
     });
+
+    Currentsocket.on('chatclear', () => {
+        ChatData.activeRoomId = '';
+        ChatData.activeRoomName = '';
+        ChatData.activeRoomType = ''; 
+        ChatData.activeRoomRole = '';
+        setMessages([]);
+        setIsActivate(false);
+        activate = false;
+    })
+
+   
 
 
     return (

@@ -25,19 +25,12 @@ export const AddRoomPopUp = (props: any) => {
     const handleSubmit = (event: any) => {
         event.preventDefault();
         if (name == '' || (password == '' && access == ACCESS.PROTECTED)) {
-            console.log('ERRROR ASSI');
-            // const sentpayload = {
-            //     name: name,
-            //     type: access,
-            //     password: password,
-            // }
-            // Currentsocket.emit('createroom', sentpayload)
+           
             return;
         }
 
 
         Currentsocket.emit('createroom', { name: name, access: access, password: password });
-        console.log('NAAAAAdi');
         setName('');
 
         // 👇️ clear all input values in the form

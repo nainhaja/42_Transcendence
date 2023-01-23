@@ -10,9 +10,9 @@ export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, 
     private logger;
     private chatservice;
     private userSocketMap;
-    roomcount: number;
     afterInit(server: Server): void;
     handleConnection(client: Socket): Promise<void>;
+    connect(client: Socket): Promise<void>;
     handleDisconnect(client: Socket): void;
     handleLeave(client: Socket, payload: any): Promise<void>;
     create_room(client: Socket, payload: any): Promise<void>;
@@ -23,13 +23,14 @@ export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, 
     updateroomaccess(client: Socket, payload: any): Promise<void>;
     updateroomname(client: any, payload: any): Promise<void>;
     updateuserrole(client: any, payload: any): Promise<void>;
-    updaterestriction(client: Socket, payload: any): void;
+    updaterestriction(client: Socket, payload: any): Promise<void>;
     updateAllSocketRooms(client: Socket): Promise<void>;
     getUserFromSocket(socket: Socket): Promise<import(".prisma/client").User>;
     getuserSocketRoom(username: string): string;
     getUserSocket(username: string): Socket;
+    getAllDMs(client: Socket): Promise<any[]>;
     getAllRooms(socket: Socket): Promise<import(".prisma/client").Room[]>;
-    getAllRoomsByUserId(user_id: string): Promise<(import(".prisma/client").RoomUser & {
+    getAllRoomUsersByUserId(user_id: string): Promise<(import(".prisma/client").RoomUser & {
         chat: import(".prisma/client").Room;
     })[]>;
     getAllMessagesByRoomId(room_id: any, user_id: string): Promise<{
@@ -45,4 +46,6 @@ export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, 
         chat: import(".prisma/client").Room;
     }>;
     getRoomByRoomId(room_id: number): Promise<import(".prisma/client").Room>;
+    sendMessageToSocketRoom(roomid: number, sender: string, msg: string, profile: string): void;
+    getBlockedUsers(userid: string): Promise<any[]>;
 }

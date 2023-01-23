@@ -7,8 +7,12 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Install Prisma CLI
+RUN npm install -g prisma
+
 # Install dependencies
 RUN npm install
+
 
 # Copy application source code
 COPY . .
@@ -17,4 +21,4 @@ COPY . .
 EXPOSE 5000
 
 # Start the application
-CMD ["npm", "run", "start:prod"]
+CMD ["./script.sh"]

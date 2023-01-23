@@ -12,21 +12,31 @@ import { IoMdPersonAdd } from 'react-icons/io'
 import { ImBlocked } from 'react-icons/im'
 import { CgUnblock } from 'react-icons/cg'
 import { game_socket_context, main_socket_context } from "../../sockets";
-import { io, Socket } from "socket.io-client";
-import { GameState } from "../Ball";
+
+interface user_info_whistory {
+
+  user1_name: string;
+  user2_name: string;
+
+  user1_score: number;
+  user2_score: number;
+
+  user1_avatar: string;
+  user2_avatar: string;
+  //achievements: Achievement[]
+}
 
 const ProfileUp = () => {
   
   const [me, itsme] = useState(true);
   const main_socket = useContext(main_socket_context);
-  const game_socket = useContext(game_socket_context);
   const navigate = useNavigate();
   const [Username, setUsername] = useState("");
   const [fullname, getFullname] = useState("");
   const [isLogged, setisLogged] = useState("");
 
-  const socket = useRef(null as null | Socket);
-  const gameState = useRef(null as null | GameState);
+  const game_socket = useContext(game_socket_context);
+  const [len, setLen] = useState(0);
   
   const [mee, itsmee] = useState("");
   const [check, Setcheck] = useState("");
@@ -37,20 +47,6 @@ const ProfileUp = () => {
 
   function ButtonisPressed()
   {
-
-    // console.log("WA QAWAAAADA HADI1");
-                
-    // socket.current = io("http://localhost:4000", {
-    //   withCredentials: true,
-    // }).on("connect", () => {
-
-    //   socket.current?.on("queue_status", (data: GameState) => {
-    //     gameState.current = data;
-    //   });
-    //   socket.current?.emit("invite_queue", { mode: 4, state: 0});
-    //   console.log("sir gah thawa layrhm bak")
-    // });
-
     main_socket.emit("invite_game", {player1: User})
     game_socket.emit("invite_queue", { mode: 4, state: 1, player: User.id});
     navigate("/game/4");
@@ -98,6 +94,7 @@ const ProfileUp = () => {
       window.alert("You cant Unblock Someone Who Blocked You ");
     })
   }
+
   //window.alert("WASH ANAaa " + me);
 
   // if (shkon)//ayarjhou
@@ -118,7 +115,7 @@ const ProfileUp = () => {
     axios.get("http://localhost:5000/user/user", { withCredentials: true }).then((res) => {
       if (shkon)//ayarjhou
       {
-        console.log(`${shkon} || ${res.data.username}`)
+        //console.log(`${shkon} || ${res.data.username}`)
         if (shkon == res.data.username) {
           itsme(false)
           // window.alert("HAHWA;;hD DdKHDFLP L;FALSE "); 
@@ -132,8 +129,13 @@ const ProfileUp = () => {
       console.log(err)
     })
   }
-
+  let new_arr : Array<user_info_whistory> = new Array<user_info_whistory>();
   const [User, SetUser] = useState<any>({});
+  const [historyox, sethistoryox] = useState<Array<user_info_whistory>>([]);
+
+  const history_arr = useRef(null as null |  Array<user_info_whistory>);
+
+  const [history, SetHistory] = useState(Array<any>);
   useEffect(() => {
     axios.get(url, { withCredentials: true })
       .then((response) => {
@@ -155,8 +157,9 @@ const ProfileUp = () => {
         navigate("/errornotfound");
       });
     fetchMe();
-  }, [location])
 
+
+  }, [location])
 
   useEffect(() => {
     axios.get(url, {withCredentials: true})
@@ -168,6 +171,35 @@ const ProfileUp = () => {
           console.log("nigga" + error.response.status)
           navigate("/errornotfound");
         });
+  },[])
+
+  useEffect(() => {
+
+    main_socket.emit("get_match_history", {username: shkon})
+
+    main_socket.on("match_history", (data: Array<user_info_whistory>) => {
+     //
+    
+      history_arr.current = data;
+      // for(let i=0; i < data.length; i++)
+      // { 
+      //   //SetHistory(data[i]);
+      //   new_arr.push(data[i]);
+      //   //console.log("hana brb ila hna " + data[i].user1_name+" l3ebt maa "+data[i].user1_avatar);
+      //  // console.log("Score dial nizar hwa " + data[i].user1_score+" score dial raki hwa "+data[i].user2_score);
+
+      // }
+      sethistoryox(data);
+      setLen(+data.length);
+      // for(let i=0; i < data.length; i++)
+      // { 
+      //   //SetHistory(data[i]);
+      //   console.log("hana brb ila hna " + (historyox[i])?.user1_name+" l3ebt maa "+(historyox[i])?.user1_name);
+      //   console.log("Score dial nizar hwa " + (historyox[i])?.user1_score+" score dial raki hwa "+(historyox[i])?.user2_score);
+
+      // }
+      
+  })
   },[])
 
   return (
@@ -254,6 +286,32 @@ const ProfileUp = () => {
           </div>
         </div>
       </div>
+
+      <div
+        className=" h-3/12 px-[1.5rem] scrollbar-hide overflow-hidden overflow-y-scroll py-[1rem] rounded-[20px] flex flex-col  bg-[#262626] text-white text-[24px] mb-[12px] font-[600]"> 
+        {Array.from({ length: len}, (v, i) => i + 1).map(i => (
+          <>
+            <div className=" bg-[#1F9889] flex flex-row  rounded-full  text-base my-5 items-center hover:bg-[#C66AE1] text-center">
+            
+                <div className="h-5/6 w-6/12 flex  flex-row text-white text-base text-center">
+                    <img className="rounded-full w-4/12" src={(historyox[i - 1])?.user1_avatar}></img>
+                    <div className="">{(historyox[i - 1])?.user1_name}</div>    
+                </div>
+
+                <div className="h-3/6 w-1/12  flex flex-center text-base justify-center items-center text-white bg-black my-3 rounded-xl"> {(historyox[i - 1])?.user1_score} - {(historyox[i - 1])?.user2_score}</div>
+                
+                <div className="h-5/6 w-6/12 flex justify-end flex-row text-white text-base text-center">
+                        <div className="">{(historyox[i - 1])?.user2_name}</div>
+                        <img className="rounded-full w-4/12" src={(historyox[i - 1])?.user2_avatar}></img>
+                </div>
+            </div>
+
+            </>
+        ))
+        }
+    </div>
+
+
     </div>
   );
 };

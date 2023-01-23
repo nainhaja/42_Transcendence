@@ -1,7 +1,7 @@
 import { Injectable} from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { PrismaService } from "src/prisma/prisma.service";
-import { Strategy, Profile, VerifyCallback } from 'passport-42';
+import { Strategy, Profile, VerifyCallback } from 'passport-42/lib';
 import { ConfigService } from "@nestjs/config";
 
 @Injectable ()

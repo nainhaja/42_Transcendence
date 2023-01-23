@@ -385,7 +385,7 @@ const SketchPong = () => {
           console.log("hh2");
           if (socket.current != null && gameState.current != null) {
             console.log("hh");
-            if (gameState.current.state === "waiting")
+            if (gameState.current.state === "matched")
             {
               let width = getWindowSize().innerWidth;
               p5.fill(0);

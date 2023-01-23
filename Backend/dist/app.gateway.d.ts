@@ -15,6 +15,7 @@ export declare class AppGateway implements OnGatewayInit, OnGatewayConnection, O
     handleConnection(client: Socket, payload: any): Promise<void>;
     inviting_game(socket: Socket, payload: any): Promise<void>;
     handleDisconnect(player_ref: Socket): Promise<void>;
-    joinRoom(socket: Socket, payload: any): Promise<void>;
+    get_this_user(user_id: string): Promise<User>;
+    match_history_all(socket: Socket, payload: any): Promise<void>;
     getUserFromSocket(socket: Socket): Promise<User>;
 }

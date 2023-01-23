@@ -13,9 +13,9 @@ exports.FortyTwoStrategy = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const prisma_service_1 = require("../../prisma/prisma.service");
-const passport_42_1 = require("passport-42");
+const lib_1 = require("passport-42/lib");
 const config_1 = require("@nestjs/config");
-let FortyTwoStrategy = class FortyTwoStrategy extends (0, passport_1.PassportStrategy)(passport_42_1.Strategy, '42') {
+let FortyTwoStrategy = class FortyTwoStrategy extends (0, passport_1.PassportStrategy)(lib_1.Strategy, '42') {
     constructor(prisma, config) {
         super({
             clientID: config.get('CLIENT_ID'),

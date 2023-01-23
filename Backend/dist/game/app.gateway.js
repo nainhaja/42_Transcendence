@@ -94,7 +94,6 @@ class Game {
                 this.players.push(player);
                 this.players_avatar.push(avatar);
                 this.players_names.push(name);
-                console.log("Reached here");
             }
         }
     }
@@ -102,16 +101,14 @@ class Game {
         if (this.players.length < 2) {
             if (this.players_names[0] !== name) {
                 this.players.push(player);
-                console.log("Reached here");
             }
         }
     }
     push_users(player, user_name) {
         if (this.users.length < 2) {
             this.users.push(player);
-        }
-        if (this.users_names.length < 2)
             this.users_names.push(user_name);
+        }
     }
     remove_player() {
         this.players.pop();
@@ -310,6 +307,52 @@ let AppGateway = class AppGateway {
     }
     async handleDisconnect(player_ref) {
     }
+    async update_user_achievements(user, achievement) {
+        try {
+            if (!user.achievements.includes(achievement)) {
+                const updated_user = await this.prismaService.user.update({
+                    where: { id: user.id },
+                    data: {
+                        achievements: {
+                            push: achievement,
+                        },
+                    },
+                });
+                return updated_user;
+            }
+            return user;
+        }
+        catch (_a) {
+            throw new common_1.HttpException('Error while updating achievements', common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async user_achievements(user_id) {
+        try {
+            let user = await this.get_user(user_id);
+            const winrate = (user.win / (user.win + user.lose)) * 100;
+            if (user.win_streak >= 10) {
+                user = await this.update_user_achievements(user, client_1.Achievement.TEN_WIN_STREAK);
+            }
+            else if (user.win_streak >= 5) {
+                user = await this.update_user_achievements(user, client_1.Achievement.FIVE_WIN_STREAK);
+            }
+            if (winrate >= 80) {
+                user = await this.update_user_achievements(user, client_1.Achievement.LEGEND_WIRATE);
+            }
+            else if (winrate >= 60) {
+                user = await this.update_user_achievements(user, client_1.Achievement.GREAT_WIRATE);
+            }
+            else if (winrate >= 50) {
+                user = await this.update_user_achievements(user, client_1.Achievement.DECENT_WIRATE);
+            }
+            else {
+                user = await this.update_user_achievements(user, client_1.Achievement.GREAT_LOSER);
+            }
+        }
+        catch (_a) {
+            throw new common_1.HttpException('Error while updating achievements', common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async Game_stopped(player_ref) {
         const player_id = this.socket_with_queue_id.get(player_ref.id);
         const user = await this.getUserFromSocket(player_ref);
@@ -326,6 +369,52 @@ let AppGateway = class AppGateway {
             this.GameMode[q_mode].queues[user_id].emit_and_clear();
             for (let i = 0; i < this.GameMode[q_mode].queues[user_id].players.length; i++)
                 this.socket_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].players[i]);
+            const user1 = await this.prismaService.user.findUnique({
+                where: { id: this.GameMode[q_mode].queues[user_id].users[0] }
+            });
+            const user2 = await this.prismaService.user.findUnique({
+                where: { id: this.GameMode[q_mode].queues[user_id].users[1] }
+            });
+            if (user1.id === user.id) {
+                await this.prismaService.user.update({
+                    where: { id: user2.id },
+                    data: {
+                        win: user2.win + 1,
+                        win_streak: user2.win_streak + 1,
+                        status: "ON",
+                    }
+                });
+                await this.prismaService.user.update({
+                    where: { id: user1.id },
+                    data: {
+                        lose: user1.lose + 1,
+                        win_streak: 0,
+                        status: "ON",
+                    }
+                });
+            }
+            else {
+                await this.prismaService.user.update({
+                    where: { id: user1.id },
+                    data: {
+                        win: user1.win + 1,
+                        win_streak: user1.win_streak + 1,
+                        status: "ON",
+                    }
+                });
+                await this.prismaService.user.update({
+                    where: { id: user2.id },
+                    data: {
+                        lose: user2.lose + 1,
+                        win_streak: 0,
+                        status: "ON",
+                    }
+                });
+            }
+            this.get_user_score(user1.id);
+            this.get_user_score(user2.id);
+            this.user_achievements(user1.id);
+            this.user_achievements(user2.id);
             this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[0]);
             this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[1]);
             this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[0]);
@@ -385,6 +474,54 @@ let AppGateway = class AppGateway {
         }
         else if (this.GameMode[0].queues.length > 0)
             socket.join(this.GameMode[0].queues[0].room);
+    }
+    async get_user(req_id) {
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id: req_id,
+            },
+        });
+        return user;
+    }
+    async update_user_score(user, score) {
+        try {
+            const updated_user = await this.prismaService.user.update({
+                where: { id: user.id },
+                data: {
+                    score: score,
+                },
+            });
+            return updated_user;
+        }
+        catch (_a) {
+            throw new common_1.HttpException('Error while updating score', common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async get_user_score(user_id) {
+        try {
+            const user = await this.get_user(user_id);
+            const win = user.win;
+            const lose = user.lose;
+            let score = 0;
+            const winrate = (win / (win + lose)) * 100;
+            if (winrate >= 80) {
+                score = win * 300 - lose * 100 + 1000;
+            }
+            else if (winrate >= 60) {
+                score = win * 300 - lose * 100 + 500;
+            }
+            else if (winrate >= 50) {
+                score = win * 300 - lose * 100 + 200;
+            }
+            else {
+                score = win * 300 - lose * 100;
+            }
+            const updated_user = await this.update_user_score(user, score);
+            return (updated_user.score);
+        }
+        catch (_a) {
+            throw new common_1.HttpException('Error while updating score', common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async GameEnded(socket, payload) {
         const user = await this.getUserFromSocket(socket);
@@ -484,6 +621,10 @@ let AppGateway = class AppGateway {
                 this.GameMode[user_mode].queues[user_id].scores[0] = 0;
                 this.GameMode[user_mode].queues[user_id].scores[1] = 0;
             }
+            this.get_user_score(this.GameMode[user_mode].queues[user_id].users[0]);
+            this.get_user_score(this.GameMode[user_mode].queues[user_id].users[1]);
+            this.user_achievements(this.GameMode[user_mode].queues[user_id].users[0]);
+            this.user_achievements(this.GameMode[user_mode].queues[user_id].users[1]);
         }
     }
     async edit_user_status(user_id, status) {
@@ -562,6 +703,8 @@ let AppGateway = class AppGateway {
                     this.socket_with_queue_id.set(socket.id, size - 1);
                     this.user_with_queue_id.set(user.id, size - 1);
                     this.user_with_queue_mode.set(user.id, i);
+                    await this.edit_user_status(this.GameMode[i].queues[size - 1].users[0], "INGAME");
+                    await this.edit_user_status(this.GameMode[i].queues[size - 1].users[1], "INGAME");
                     if (payload.state === 1)
                         this.GameMode[i].queues[size - 1].users.push(payload.player);
                 }
@@ -633,13 +776,15 @@ let AppGateway = class AppGateway {
                     socket.join(this.GameMode[i].queues[size - 1].room);
                     this.cpt++;
                 }
-                this.GameMode[i].queues[size - 1].push_player(socket.id, user.avatar, user.username);
+                this.GameMode[i].queues[size - 1].players_avatar.push(user.avatar);
+                this.GameMode[i].queues[size - 1].players_names.push(user.username);
+                this.GameMode[i].queues[size - 1].push_players(socket.id, user.avatar, user.username);
                 this.GameMode[i].queues[size - 1].push_users(user.id, user.username);
                 this.GameMode[i].queues[size - 1].check_players_are_ready();
                 this.socket_with_queue_id.set(socket.id, size - 1);
                 this.user_with_queue_id.set(user.id, size - 1);
                 this.user_with_queue_mode.set(user.id, i);
-                if (this.GameMode[i].queues[size - 1].users.length === 2) {
+                if (this.GameMode[i].queues[size - 1].users_names.length === 2) {
                     const game_modes = ["MODE1", "MODE2", "MODE3"];
                     const game = await this.prismaService.game.create({
                         data: {

@@ -28,11 +28,30 @@ networks:
 #       POSTGRES_DB: nest_db
 #     networks:
 #       - myProject
-#     volumes: 
-#       - database:/var/lib/postgresql/data
+# networks:
+#   myProject:
+
+
+# version: '3'
+# services:
+#   pg_db:
+#     container_name: pg_container
+#     image: 'postgres:latest'
+#     ports:
+#       - 5432:5432
+#     environment:
+#       POSTGRES_USER: user
+#       POSTGRES_PASSWORD: password
+#       POSTGRES_DB: nest_db
+#     networks:
+#       - myProject
+#     # volumes: 
+#     #   - database:/var/lib/postgresql/data
 #   backend:
+#     depends_on:
+#       - pg_db
 #     build:
-#       context: ./Backend
+#       context: ./Backend/
 #       args:
 #         NODE_ENV: production
 #       dockerfile: 'Dockerfile'
@@ -42,11 +61,10 @@ networks:
 #       - myProject
 #   frontend:
 #     build:
-#       context: ./Frontend
+#       context: ./Frontend/
 #       args:
 #         NODE_ENV: production
 #       dockerfile: 'Dockerfile'
-#     # command: npm run start
 #     ports:
 #       - 3000:3000
 #     networks:
@@ -56,4 +74,4 @@ networks:
 #   database: {}
 
 # networks:
-#   myProject:
+#   myProject: 

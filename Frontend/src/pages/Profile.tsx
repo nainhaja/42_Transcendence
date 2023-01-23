@@ -15,7 +15,7 @@ const Profile = () => {
       </div>
       {/* ------ bottom part ------ */}
       <div className="mt-[144px] flex items-center gap-[44px]">
-        <LastGames />
+        {/* <LastGames /> */}
         <Achievments/>
         
       </div>

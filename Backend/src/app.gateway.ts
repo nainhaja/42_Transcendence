@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, Req } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit, Req } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import {Socket, Server} from "socket.io"
 import { JwtGuard } from 'src/auth/guard';
@@ -30,6 +30,51 @@ import { Console } from 'console';
     COMMUNICATOR: 'COMMUNICATOR'
   };
   
+  interface user_info_whistory {
+
+    user1_name: string;
+    user2_name: string;
+
+    user1_score: number;
+    user2_score: number;
+
+    user1_avatar: string;
+    user2_avatar: string;
+    //achievements: Achievement[]
+  }
+
+
+  class user_info_whistory {
+    constructor()
+    {
+        this.user1_name = "";
+        this.user2_name = "";
+    
+        this.user1_score = 0;
+        this.user2_score = 0;
+    
+        this.user1_avatar = "";
+        this.user2_avatar = "";
+        //this.achievements = [];
+    }
+    User_get_all()
+    {
+        return {
+
+            user1_name : this.user1_name,
+            user2_name : this.user2_name,
+        
+            user1_score : this.user1_score,
+            user2_score : this.user2_score,
+        
+            user1_avatar : this.user1_avatar,
+            user2_avatar :this.user2_avatar,
+            //achievements : this.achievements,
+        }
+    }
+
+  }
+
   interface user_info {
     id: string
     full_name: string
@@ -166,9 +211,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     constructor(private readonly jwtService: JwtService, private readonly prismaService: PrismaService) {}
     private logger: Logger = new Logger("AppGateway");
     private my_users: Array<props> = Array<props>();
+    
     private  server: Server;
     private my_unique_users: Array<user_info> = Array<user_info>();;
-
+    
     async afterInit(server: Server) {
         this.server = server;
         console.log("Habibi weeeecchhh");
@@ -307,11 +353,76 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
       }
 
-      @SubscribeMessage('user_joined_room')
-      async joinRoom(socket: Socket, payload: any) 
+      async get_this_user(user_id : string){
+        const new_user = await this.prismaService.user.findUnique({
+            where: {id: user_id },
+          });
+
+        if (new_user)
+          return new_user;
+      }
+
+
+      @SubscribeMessage('get_match_history')
+      async match_history_all(socket: Socket, payload: any) 
       {
+        //console.log("Heeehoo");
+        const user_nb = await this.prismaService.user.count({
+            where: {
+              username: payload.username,
+            },
+          });
+          if (user_nb == 0) {
+            throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+          } else {
+            const user = await this.prismaService.user.findFirst({
+              where: {
+                username: payload.username,
+            }});
+
+        const games = await this.prismaService.game.findMany({
+            where: {
+              OR: [
+                { user1: { id: user.id } },
+                { user2: { id: user.id } }
+              ]
+            },
+            take: 5,
+          });
+
+          let my_user_hiss: Array<user_info_whistory> = Array<user_info_whistory>();;
+
+          for(let i=0; i < games.length; i++)
+          {
+            my_user_hiss.push(new user_info_whistory());
+            
+            const new_user1 = await this.get_this_user(games[i].user1_id);
+            const new_user2 = await this.get_this_user(games[i].user2_id);
+
+            if (new_user1 && new_user2)
+            {
+                my_user_hiss[i].user1_name = new_user1.username;
+                my_user_hiss[i].user2_name = new_user2.username;
+                
+                my_user_hiss[i].user1_avatar = new_user1.avatar;
+                my_user_hiss[i].user2_avatar = new_user2.avatar;
+    
+                my_user_hiss[i].user1_score = games[i].user1_score;
+                my_user_hiss[i].user2_score = games[i].user2_score;
+            }
+            //console.log("scores are "+my_user_hiss[i].user1_score + " "+my_user_hiss[i].user2_score);
+          }
+         // console.log("Match number is "+my_user_hiss.length);
+          this.server.emit("match_history", my_user_hiss);
+          
+        }
+
+
 
       }
+
+
+
 
 
 

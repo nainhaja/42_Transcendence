@@ -12,7 +12,6 @@ const fakeDataa = [
 ];
 
 
-
 const MyCollection = () => {
 
   const game_socket = useContext(game_socket_context);
@@ -21,9 +20,7 @@ const MyCollection = () => {
   {
     game_socket.emit("player_join_queue", { mode: game_mode , state: 1});
   }
-
-
-
+  
   return (
     <div className="flex-wrap">
       <h1 className="text-[21px] text-white font-[600] mb-[15px]">

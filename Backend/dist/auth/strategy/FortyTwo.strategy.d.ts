@@ -1,5 +1,5 @@
 import { PrismaService } from "src/prisma/prisma.service";
-import { Profile, VerifyCallback } from 'passport-42';
+import { Profile, VerifyCallback } from 'passport-42/lib';
 import { ConfigService } from "@nestjs/config";
 declare const FortyTwoStrategy_base: new (...args: any[]) => any;
 export declare class FortyTwoStrategy extends FortyTwoStrategy_base {

@@ -79,6 +79,7 @@ function Game_invite(props: {data : user_info}) {
   const accept = (e : any)=>{
     gameSocket.emit("invite_queue", { mode: 4, state: 2});
     navigate("/game/4");
+    toast.dismiss();
   }
 
   function Decline () {
@@ -187,6 +188,7 @@ function App() {
     <ToastContainer/>
       <Routes>
         <Route element={<RequireAuth />}>
+            <Route path="/chat" element={<ChatPage/>} />
         <Route path='/game/*' element={<SketchPong/>} />
             <Route path='/watch/*' element={<Spectator/>} />
           <Route path="/" element={<Dashboard />}>
@@ -196,7 +198,6 @@ function App() {
               path="/settings"
               element={<Settings state={state.is_two_fa_enable} />}
             />
-             <Route path="/chat" element={<ChatPage/>} />
             <Route path="/friends" element={<Addfriend />} />
 
           </Route>

@@ -6,7 +6,6 @@ export const RolePopUp = (props: any) => {
     const [username, setUserName] = useState('');
 
     const handleSubmit = (event: any) =>{
-        console.log(username + "'s Role has been updated to " + role);
 
         const sentpayload={
             roomid : ChatData.activeRoomId,

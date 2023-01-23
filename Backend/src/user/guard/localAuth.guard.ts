@@ -5,13 +5,13 @@ import { AuthGuard } from "@nestjs/passport";
 export class LocalAuthGuard extends AuthGuard('local') {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
-        console.log(request.cookies);
+        //console.log(request.cookies);
         if (request.cookies['access_token']) {
             // console.log(request.cookies['access_token']);
-            console.log('in');
+            //console.log('in');
             return true;
         }
-        console.log('out');
+        //console.log('out');
         return false;
         // console.log(request.cookies['access_token']);
     }

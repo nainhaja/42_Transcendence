@@ -21,10 +21,9 @@ export const AccessPopUp = (props: any) => {
         event.preventDefault();
         if (password == '' && newaccess == ACCESS.PROTECTED)
         {
-            console.log('ERRROR ASSI');
+           //console.log('ERRROR ASSI');
         }
         else{
-            console.log('new access is : ' + newaccess + ' ' + password);
             const sentpayload = {
                 roomid: ChatData.activeRoomId,
                 access: newaccess,

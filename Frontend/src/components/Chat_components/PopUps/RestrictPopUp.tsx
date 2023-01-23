@@ -32,7 +32,6 @@ export const RestrictPopUp = (props: any) => {
             duration: duration,
         }
 
-        console.log("hahahah", sentpayload.roomid, sentpayload.username, sentpayload.restriction, sentpayload.duration);
         Currentsocket.emit('updaterestriction', sentpayload);
         props.hidepopup();
     }

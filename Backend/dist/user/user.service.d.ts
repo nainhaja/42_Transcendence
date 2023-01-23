@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Achievement, UserStatus } from '@prisma/client';
-import { PrismaService } from "src/prisma/prisma.service";
+import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDto } from './dto';
 import { S3 } from 'aws-sdk';
 export declare class UserService {
@@ -20,6 +20,7 @@ export declare class UserService {
     get_leaderboard(res: any): Promise<void>;
     add_friend(user_rep: any, friend_name: string, res: any): Promise<void>;
     create_dm_room(user: any, friend: any): Promise<void>;
+    delete_dm_room(user_id: any, friend_id: any): Promise<void>;
     get_friends(user: UserDto, res: any): Promise<void>;
     upload(user_obj: UserDto, file: any): Promise<S3.ManagedUpload.SendData>;
     uploadS3(user: any, file: any, bucket: any, name: any): Promise<S3.ManagedUpload.SendData>;
@@ -30,4 +31,5 @@ export declare class UserService {
     block_friend(user_req: any, friend_name: string, res: any): Promise<void>;
     status_friend(user_req: any, friend_name: string, res: any): Promise<void>;
     unblock_friend(user_req: any, friend_name: string, res: any): Promise<void>;
+    get_history(user_req: any, username: string, res: any): Promise<void>;
 }

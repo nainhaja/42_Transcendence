@@ -17,6 +17,7 @@ export declare class UserController {
     block_friend(req: any, param: any, res: any): Promise<void>;
     unblock_friend(req: any, param: any, res: any): Promise<void>;
     get_friends(req: any, res: any): Promise<void>;
+    get_history(req: any, param: any, res: any): Promise<void>;
     status_friend(req: any, param: any, res: any): Promise<void>;
     get_which_one(req: any, param: any, res: any): Promise<void>;
     upload(req: any, file: any): Promise<import("aws-sdk/clients/s3").ManagedUpload.SendData>;

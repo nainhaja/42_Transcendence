@@ -14,8 +14,8 @@ export declare class AuthService {
     }>;
     save_secret_db(user: any, secret: string): Promise<void>;
     generate_qr_code(user_obj: any, res: any): Promise<any>;
-    enable_2fa(user: any, res: any): Promise<void>;
+    enable_2fa(user_req: any, res: any): Promise<void>;
     disable_2fa(user_req: UserDto, res: any): Promise<void>;
-    verify_2fa(req: any, res: any, param: any): Promise<void>;
+    verify_2fa(param: any, res: any): Promise<void>;
     get_user(req_id: string): Promise<import(".prisma/client").User>;
 }

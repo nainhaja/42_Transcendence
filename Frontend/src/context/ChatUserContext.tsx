@@ -34,6 +34,7 @@ export interface IChatData {
     activeRoomRole: string;
     activeRoomMessages: any[];
     connectedUsers: string[];
+    blockedusers: string[];
     socket: any;
 
 }
@@ -51,6 +52,7 @@ export const ChatData: IChatData = {
     activeRoomRole: '',
     activeRoomMessages: [],
     connectedUsers: [],
+    blockedusers: [],
     socket: {},
 };
 
@@ -76,8 +78,8 @@ export let Currentsocket = io("http://localhost:4000/chat", {
 // }
 
 
-var socketOptions = {
-    withCredentials: true,
- };
+// var socketOptions = {
+//     withCredentials: true,
+//  };
     // export const SocketValue = io("http://localhost:4000/chat" , socketOptions);// io("http://localhost:4000/" + "/chat", socketOptions);
    // export const SocketContext = React.createContext<Socket>(SocketValue);

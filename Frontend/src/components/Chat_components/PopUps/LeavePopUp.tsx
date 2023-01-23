@@ -13,7 +13,6 @@ export const LeavePopUp = (props: any) => {
 
        
 
-        console.log('You Have Left The Room');
         props.hidepopup();
     }
     return (

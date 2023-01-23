@@ -15,13 +15,7 @@ export const Input = (props: any) => {
 
 
     const handleKeyDown = (event: any) => {
-        if (event.key === 'Enter') {
-            // console.log('send this message: ' + message + ' in ' + sentpayload.roomname);
-            // 👇 Get input value
-            // setUpdated(message);
-            //event.preventDefault();
-
-
+        if (event.key === 'Enter' && message) {
             const sentpayload = {
                 roomid: ChatData.activeRoomId,
                 roomname: ChatData.activeRoomName,
@@ -30,7 +24,7 @@ export const Input = (props: any) => {
 
             setMessage('');
             event.target.value = '';
-            let newmesg = { sender: ChatData.userName, messagecontent: message, profile: ChatData.profile, roomid: ChatData.activeRoomId };
+            //let newmesg = { sender: ChatData.userName, messagecontent: message, profile: ChatData.profile, roomid: ChatData.activeRoomId };
             //props.addMessage(newmesg);
             Currentsocket.emit('recievemessage', sentpayload);
         }

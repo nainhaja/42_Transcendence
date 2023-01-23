@@ -34,22 +34,26 @@ let UserService = class UserService {
                 },
                 data: {
                     full_name: new_full_name,
-                }
+                },
             });
-            res.json({ message: "success!" });
+            res.json({ message: 'success!' });
         }
         catch (_a) {
-            throw new common_1.HttpException("Error while updating username", common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException('Error while updating username', common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async get_user_all(user_obj, res) {
-        const user = await this.prisma.user.findUnique({
-            where: {
-                id: user_obj.id,
-            }
-        });
-        console.log("ayoub dima khdam : " + user.username);
-        res.json(user);
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    id: user_obj.id,
+                },
+            });
+            res.json(user);
+        }
+        catch (_a) {
+            throw new common_1.HttpException('Error while getting users', common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async get_me(user_obj, res) {
         const user = await this.get_user(user_obj.id);
@@ -59,7 +63,7 @@ let UserService = class UserService {
         const user_nb = await this.prisma.user.count({
             where: {
                 username: which_friend,
-            }
+            },
         });
         if (user_nb == 0) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
@@ -68,7 +72,7 @@ let UserService = class UserService {
             const user_friend = await this.prisma.user.findFirst({
                 where: {
                     username: which_friend,
-                }
+                },
             });
             res.json(user_friend);
         }
@@ -79,30 +83,30 @@ let UserService = class UserService {
             const win = user.win;
             const lose = user.lose;
             let score = 0;
-            const winrate = win / (win + lose) * 100;
+            const winrate = (win / (win + lose)) * 100;
             if (winrate >= 80) {
-                score = (win * 300) - (lose * 100) + 1000;
+                score = win * 300 - lose * 100 + 1000;
             }
             else if (winrate >= 60) {
-                score = (win * 300) - (lose * 100) + 500;
+                score = win * 300 - lose * 100 + 500;
             }
             else if (winrate >= 50) {
-                score = (win * 300) - (lose * 100) + 200;
+                score = win * 300 - lose * 100 + 200;
             }
             else {
-                score = (win * 300) - (lose * 100);
+                score = win * 300 - lose * 100;
             }
             res.json((await this.update_user_score(user, score)).score);
         }
         catch (_a) {
-            throw new common_1.HttpException("Error while updating score", common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException('Error while updating score', common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async get_user(req_id) {
         const user = await this.prisma.user.findUnique({
             where: {
                 id: req_id,
-            }
+            },
         });
         return user;
     }
@@ -112,12 +116,12 @@ let UserService = class UserService {
                 where: { id: user.id },
                 data: {
                     score: score,
-                }
+                },
             });
             return updated_user;
         }
         catch (_a) {
-            throw new common_1.HttpException("Error while updating score", common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException('Error while updating score', common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async update_user_achievements(user, achievement) {
@@ -128,15 +132,15 @@ let UserService = class UserService {
                     data: {
                         achievements: {
                             push: achievement,
-                        }
-                    }
+                        },
+                    },
                 });
                 return updated_user;
             }
             return user;
         }
         catch (_a) {
-            throw new common_1.HttpException("Error while updating achievements", common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException('Error while updating achievements', common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async edit_user_status(user, status) {
@@ -144,13 +148,13 @@ let UserService = class UserService {
             where: { id: user.id },
             data: {
                 status: status,
-            }
+            },
         });
     }
     async get_user_achievements(user_obj, res) {
         try {
             let user = await this.get_user(user_obj.id);
-            const winrate = user.win / (user.win + user.lose) * 100;
+            const winrate = (user.win / (user.win + user.lose)) * 100;
             if (user.win_streak >= 10) {
                 user = await this.update_user_achievements(user, client_1.Achievement.TEN_WIN_STREAK);
             }
@@ -172,7 +176,7 @@ let UserService = class UserService {
             res.json(user.achievements);
         }
         catch (_a) {
-            throw new common_1.HttpException("Error while updating achievements", common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException('Error while updating achievements', common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async get_leaderboard(res) {
@@ -193,7 +197,7 @@ let UserService = class UserService {
         const nb_user = await this.prisma.user.count({
             where: {
                 username: friend_name,
-            }
+            },
         });
         if (nb_user == 0) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
@@ -211,7 +215,7 @@ let UserService = class UserService {
                 },
                 select: {
                     friends: true,
-                }
+                },
             });
             const user_blocked = await this.prisma.user.findUnique({
                 where: {
@@ -219,7 +223,7 @@ let UserService = class UserService {
                 },
                 select: {
                     blocked: true,
-                }
+                },
             });
             const friend_blocked = await this.prisma.user.findUnique({
                 where: {
@@ -227,7 +231,7 @@ let UserService = class UserService {
                 },
                 select: {
                     blocked: true,
-                }
+                },
             });
             for (let i = 0; i < user_blocked.blocked.length; i++) {
                 if (user_blocked.blocked[i].username == friend_name) {
@@ -251,8 +255,8 @@ let UserService = class UserService {
                     friends: {
                         connect: {
                             id: friend.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             const updated_friend = await this.prisma.user.update({
@@ -262,8 +266,8 @@ let UserService = class UserService {
                     friends: {
                         connect: {
                             id: user.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             this.create_dm_room(user, friend);
@@ -273,9 +277,9 @@ let UserService = class UserService {
     async create_dm_room(user, friend) {
         const room = await this.prisma.room.create({
             data: {
-                name: user.username + " - " + friend.username,
+                name: user.username + ' - ' + friend.username,
                 type: client_1.ACCESS.DM,
-            }
+            },
         });
         const roomuser = await this.prisma.roomUser.create({
             data: {
@@ -284,7 +288,7 @@ let UserService = class UserService {
                 role: client_1.Role.MEMBER,
                 is_banned: false,
                 mute_time: new Date(),
-            }
+            },
         });
         const roomuser2 = await this.prisma.roomUser.create({
             data: {
@@ -293,7 +297,29 @@ let UserService = class UserService {
                 role: client_1.Role.MEMBER,
                 is_banned: false,
                 mute_time: new Date(),
-            }
+            },
+        });
+    }
+    async delete_dm_room(user_id, friend_id) {
+        const rooms = await this.prisma.room.findMany({
+            where: {
+                type: client_1.ACCESS.DM,
+                users: {
+                    every: { user: { id: { in: [user_id, friend_id] } } },
+                },
+            },
+        });
+        const roomIds = rooms.map((room) => room.id);
+        await this.prisma.roomUser.deleteMany({
+            where: { Room_id: { in: roomIds } },
+        });
+        await this.prisma.room.deleteMany({
+            where: {
+                type: client_1.ACCESS.DM,
+                users: {
+                    every: { user: { id: { in: [user_id, friend_id] } } },
+                },
+            },
         });
     }
     async get_friends(user, res) {
@@ -304,7 +330,7 @@ let UserService = class UserService {
                 },
                 select: {
                     friends: true,
-                }
+                },
             });
             res.json(friends.friends);
         }
@@ -317,8 +343,7 @@ let UserService = class UserService {
             const user = await this.get_user(user_obj.id);
             const { originalname } = file;
             const bucketS3 = this.config.get('AWS_BUCKET_NAME');
-            ;
-            return ((await this.uploadS3(user, file.buffer, bucketS3, originalname)));
+            return await this.uploadS3(user, file.buffer, bucketS3, originalname);
         }
         catch (_a) {
             throw new common_1.HttpException('Error while uploading image', common_1.HttpStatus.BAD_REQUEST);
@@ -326,7 +351,7 @@ let UserService = class UserService {
     }
     async uploadS3(user, file, bucket, name) {
         const s3 = this.getS3();
-        const generateFileName = ((bytes = 15) => crypto.randomBytes(bytes).toString('hex'));
+        const generateFileName = (bytes = 15) => crypto.randomBytes(bytes).toString('hex');
         const fileName = generateFileName() + name;
         var params = {
             Bucket: bucket,
@@ -359,7 +384,7 @@ let UserService = class UserService {
             data: {
                 avatar: avatar_link,
                 avatar_key: data_key,
-            }
+            },
         });
         if (old_avatar_key != null) {
             var params = { Bucket: bucket, Key: old_avatar_key };
@@ -373,7 +398,7 @@ let UserService = class UserService {
                 },
                 select: {
                     friends: true,
-                }
+                },
             });
             res.json(user_friends.friends);
         }
@@ -385,7 +410,7 @@ let UserService = class UserService {
         const user_nb = await this.prisma.user.count({
             where: {
                 username: friend_name,
-            }
+            },
         });
         if (user_nb == 0) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
@@ -394,7 +419,7 @@ let UserService = class UserService {
             const friend = await this.prisma.user.findFirst({
                 where: {
                     username: friend_name,
-                }
+                },
             });
             const user_friends = await this.prisma.user.findUnique({
                 where: {
@@ -402,7 +427,7 @@ let UserService = class UserService {
                 },
                 select: {
                     friends: true,
-                }
+                },
             });
             let friend_found = false;
             for (let i = 0; i < user_friends.friends.length; i++) {
@@ -421,8 +446,8 @@ let UserService = class UserService {
                     friends: {
                         disconnect: {
                             id: friend.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             const updated_friend = await this.prisma.user.update({
@@ -432,8 +457,8 @@ let UserService = class UserService {
                     friends: {
                         disconnect: {
                             id: user.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             res.json({ message: 'success' });
@@ -443,7 +468,7 @@ let UserService = class UserService {
         const user_nb = await this.prisma.user.count({
             where: {
                 username: friend_name,
-            }
+            },
         });
         if (user_nb == 0) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
@@ -452,7 +477,7 @@ let UserService = class UserService {
             const block_friend = await this.prisma.user.findFirst({
                 where: {
                     username: friend_name,
-                }
+                },
             });
             const user = await this.prisma.user.findUnique({
                 where: {
@@ -460,7 +485,7 @@ let UserService = class UserService {
                 },
                 select: {
                     blocked: true,
-                }
+                },
             });
             let blocked_friend_found = false;
             for (let i = 0; i < user.blocked.length; i++) {
@@ -472,6 +497,7 @@ let UserService = class UserService {
             if (blocked_friend_found == true) {
                 throw new common_1.HttpException('Friend already blocked', common_1.HttpStatus.BAD_REQUEST);
             }
+            this.delete_dm_room(user_req.id, block_friend.id);
             const updated_user = await this.prisma.user.update({
                 where: { id: user_req.id },
                 include: { blocked: true },
@@ -479,13 +505,13 @@ let UserService = class UserService {
                     blocked: {
                         connect: {
                             id: block_friend.id,
-                        }
+                        },
                     },
                     friends: {
                         disconnect: {
                             id: block_friend.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             const updated_friend = await this.prisma.user.update({
@@ -495,8 +521,8 @@ let UserService = class UserService {
                     friends: {
                         disconnect: {
                             id: user_req.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             res.json({ message: 'success' });
@@ -506,18 +532,18 @@ let UserService = class UserService {
         const user_nb = await this.prisma.user.count({
             where: {
                 username: friend_name,
-            }
+            },
         });
         if (user_nb == 0) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
         }
         else {
-            let status = "friend";
+            let status = 'friend';
             const user = await this.get_user(user_req.id);
             const friend = await this.prisma.user.findFirst({
                 where: {
                     username: friend_name,
-                }
+                },
             });
             const user_friends = await this.prisma.user.findUnique({
                 where: {
@@ -525,7 +551,7 @@ let UserService = class UserService {
                 },
                 select: {
                     friends: true,
-                }
+                },
             });
             const user_blocked = await this.prisma.user.findUnique({
                 where: {
@@ -533,7 +559,7 @@ let UserService = class UserService {
                 },
                 select: {
                     blocked: true,
-                }
+                },
             });
             const friend_blocked = await this.prisma.user.findUnique({
                 where: {
@@ -541,7 +567,7 @@ let UserService = class UserService {
                 },
                 select: {
                     blocked: true,
-                }
+                },
             });
             let friend_found = false;
             for (let i = 0; i < user_friends.friends.length; i++) {
@@ -576,7 +602,7 @@ let UserService = class UserService {
         const user_nb = await this.prisma.user.count({
             where: {
                 username: friend_name,
-            }
+            },
         });
         if (user_nb == 0) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
@@ -585,7 +611,7 @@ let UserService = class UserService {
             const unblock_friend = await this.prisma.user.findFirst({
                 where: {
                     username: friend_name,
-                }
+                },
             });
             const user_blocked = await this.prisma.user.findUnique({
                 where: {
@@ -593,7 +619,7 @@ let UserService = class UserService {
                 },
                 select: {
                     blocked: true,
-                }
+                },
             });
             let blocked_friend_found = false;
             for (let i = 0; i < user_blocked.blocked.length; i++) {
@@ -612,11 +638,37 @@ let UserService = class UserService {
                     blocked: {
                         disconnect: {
                             id: unblock_friend.id,
-                        }
-                    }
+                        },
+                    },
                 },
             });
             res.json({ message: 'success' });
+        }
+    }
+    async get_history(user_req, username, res) {
+        const user_nb = await this.prisma.user.count({
+            where: {
+                username: username,
+            },
+        });
+        if (user_nb == 0) {
+            throw new common_1.HttpException('User not found', common_1.HttpStatus.BAD_REQUEST);
+        }
+        else {
+            const user = await this.prisma.user.findFirst({
+                where: {
+                    username: username,
+                }
+            });
+            const games = await this.prisma.game.findMany({
+                where: {
+                    OR: [
+                        { user1: { id: user.id } },
+                        { user2: { id: user.id } }
+                    ]
+                }
+            });
+            res.json(games);
         }
     }
 };
@@ -704,6 +756,12 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], UserService.prototype, "unblock_friend", null);
+__decorate([
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], UserService.prototype, "get_history", null);
 UserService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService, config_1.ConfigService])

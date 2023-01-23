@@ -1,14 +1,27 @@
-import React from "react";
+
+import React, { useEffect } from "react";
 import { ChatData } from "../../../context/ChatUserContext";
 
 
 export const Message = (props: any) => {
-    const sender = props.message.sender;
-    const messagecontent = props.message.messagecontent;
-    const profile = props.message.profile;
-    const owner = sender == ChatData.userName ? 'owner' : '';
-    const classname = 'message ' + owner;
+    let sender = props.message.sender;
+    let messagecontent = props.message.messagecontent;
+    let profile = props.message.profile;
+    let owner = (sender == ChatData.userName) ? 'owner' : '';
+    let classname = 'message ' + owner;
 
+
+    if (ChatData.blockedusers.indexOf(sender) > -1){
+        messagecontent = 'HIDDEN CONTENT';
+        sender = 'HIDDEN';
+        profile = 'blocked.png'
+    }
+    
+
+    useEffect(() =>{
+        
+        
+    }, [])
 
     return (
         <div className= {classname}>

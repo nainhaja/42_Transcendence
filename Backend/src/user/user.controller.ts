@@ -15,7 +15,6 @@ export class UserController {
     @UseGuards(JwtGuard)
     @Get('/')
     signin(@Req() req){
-        this.userService.edit_user_status(req.user_obj, UserStatus.ON);
         return req.user_obj;
     }
 
@@ -45,7 +44,7 @@ export class UserController {
     }
     
     @UseGuards(JwtGuard)
-    @Get('logout')
+    @Post('logout')
     logout(@Req() req, @Res({ passthrough: true }) res){
         this.userService.edit_user_status(req.user_obj, UserStatus.OFF);
         res.clearCookie('access_token');
@@ -104,7 +103,13 @@ export class UserController {
     get_friends(@Req() req, @Res() res){
         return this.userService.get_friends(req.user_obj, res);
     }
-    
+
+    @UseGuards(JwtGuard)
+    @Get('get_history/:username')
+    get_history(@Req() req, @Param() param, @Res() res){
+        return this.userService.get_history(req.user_obj,param.username, res);
+    }
+
     @UseGuards(JwtGuard)
     @Get('status_friend/:friend_name')
     status_friend(@Req() req, @Param() param, @Res() res){
@@ -117,6 +122,12 @@ export class UserController {
     {
         return this.userService.get_which_friend(req.user_obj, param.whichone ,res);
     }
+
+    // @Get('user/id/:username')
+    // async get_user_by_id(@Req() req, @Param() param, @Res() res)
+    // {
+    //     return this.userService.get_user_by_id(req.user_obj, param.username ,res);
+    // }
     
     @UseGuards(JwtGuard)
     @Post('upload')

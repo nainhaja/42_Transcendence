@@ -14,7 +14,6 @@ export const AddMemberPopUp = (props: any)  => {
             console.log('ERRROR ASSI');
             return ;    
         }
-        console.log('selected user : ' + name);
         setName('');
         const sentpayload = {
             username: name,

@@ -1,4 +1,3 @@
-import { profile } from "console";
 import React, { useState } from "react";
 import { ChatData, Currentsocket } from "../../../context/ChatUserContext";
 import { JoinPopUp } from "../PopUps/JoinPopUp";
@@ -14,7 +13,7 @@ export const Room = (props: any) => {
     const [opened, setOpened] = useState(false);
 
     const roominfo = {
-        profile: 'hgrissen.jpeg',//props.room.profile,
+        profile: '',//props.room.profile,
         roomname: props.room.name,
         lastmessage: props.room.lastmessage,
         lastmessagedate: '',
@@ -26,28 +25,25 @@ export const Room = (props: any) => {
 
     switch (roominfo.type) {
         case "PROTECTED":
-            roominfo.profile = 'https://ui-avatars.com/api/?name=' + roominfo.roomname + '&background=EB6144&color=fff&font-size=0.5'
+            roominfo.profile = 'https://ui-avatars.com/api/?name=' + roominfo.roomname + '&background=EB6144&color=EB6144&font-size=0.5'
             break;
         case "PRIVATE":
-            roominfo.profile = 'https://ui-avatars.com/api/?name=' + roominfo.roomname + '&background=3E72EB&color=fff&font-size=0.5'
+            roominfo.profile = 'https://ui-avatars.com/api/?name=' + roominfo.roomname + '&background=3E72EB&color=3E72EB&font-size=0.5'
             break;
         case "PUBLIC":
-            roominfo.profile = 'https://ui-avatars.com/api/?name=' + roominfo.roomname + '&background=A2EB26&color=fff&font-size=0.5'
+            roominfo.profile = 'https://ui-avatars.com/api/?name=' + roominfo.roomname + '&background=A2EB26&color=A2EB26&font-size=0.5'
             break;
         default:
+            roominfo.profile = props.room.profile;
             break;
     }
 
 
     
-
     const handleOpenRoom = () => {
-        // console.log('Open ' + roominfo.roomname + ' Chat')
-        // console.log(props);
         if (!roominfo.joined)
             setShowJoin(true);
         else if (ChatData.activeRoomId != roominfo.id){
-            console.log(' enter the room!!');
             Currentsocket.emit('enterroom', roominfo);
             // Currentsocket. //join("some room");
         }
