@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Swal from "sweetalert2";
 import { StringLiteral } from "typescript";
@@ -11,16 +11,22 @@ import { Usercontext } from "../../context/Usercontext"
 import { IoMdPersonAdd } from 'react-icons/io'
 import { ImBlocked } from 'react-icons/im'
 import { CgUnblock } from 'react-icons/cg'
-import { main_socket_context } from "../../sockets";
+import { game_socket_context, main_socket_context } from "../../sockets";
+import { io, Socket } from "socket.io-client";
+import { GameState } from "../Ball";
 
 const ProfileUp = () => {
   
   const [me, itsme] = useState(true);
   const main_socket = useContext(main_socket_context);
+  const game_socket = useContext(game_socket_context);
   const navigate = useNavigate();
   const [Username, setUsername] = useState("");
   const [fullname, getFullname] = useState("");
   const [isLogged, setisLogged] = useState("");
+
+  const socket = useRef(null as null | Socket);
+  const gameState = useRef(null as null | GameState);
   
   const [mee, itsmee] = useState("");
   const [check, Setcheck] = useState("");
@@ -31,7 +37,22 @@ const ProfileUp = () => {
 
   function ButtonisPressed()
   {
+
+    // console.log("WA QAWAAAADA HADI1");
+                
+    // socket.current = io("http://localhost:4000", {
+    //   withCredentials: true,
+    // }).on("connect", () => {
+
+    //   socket.current?.on("queue_status", (data: GameState) => {
+    //     gameState.current = data;
+    //   });
+    //   socket.current?.emit("invite_queue", { mode: 4, state: 0});
+    //   console.log("sir gah thawa layrhm bak")
+    // });
+
     main_socket.emit("invite_game", {player1: User})
+    game_socket.emit("invite_queue", { mode: 4, state: 1, player: User.id});
     navigate("/game/4");
   }
 

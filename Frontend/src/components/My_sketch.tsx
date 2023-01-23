@@ -114,9 +114,9 @@ const SketchPong = () => {
     {
       const game_mode : number =  + (window.location.pathname.split("/")[2]);
       if (game_mode !== 4)
-        socket.current?.emit("player_join_queue", { mode: game_mode });
+        socket.current?.emit("player_join_queue", { mode: game_mode, state: 0});
       else 
-        socket.current?.emit("invite_queue", { mode: game_mode, state: 1});
+        socket.current?.emit("invite_queue", { mode: game_mode, state: 3});
     }
       
       else if (state == "spect")

@@ -77,6 +77,7 @@ function Game_invite(props: {data : user_info}) {
   const gameState = useRef(null as null | GameState);
   console.log("amalk");
   const accept = (e : any)=>{
+    gameSocket.emit("invite_queue", { mode: 4, state: 2});
     navigate("/game/4");
   }
 
