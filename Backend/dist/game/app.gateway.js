@@ -150,21 +150,25 @@ class Game {
             this.scores[0]++;
             this.update_status("scored");
             this.lastscored = this.players[0];
+            this.ball_direction_x *= -1;
             clearInterval(this.game_initializer);
         }
         else if (this.ball_x < this.fr_paddle_x + this.paddle_width) {
             this.scores[1]++;
             this.update_status("scored");
             this.lastscored = this.players[1];
+            this.ball_direction_x *= -1;
             clearInterval(this.game_initializer);
         }
         if (this.scores[0] === this.score_limit) {
             this.winner = this.users[0];
+            this.winner_name = this.users_names[0];
             this.update_status("endGame");
             clearInterval(this.game_initializer);
         }
         else if (this.scores[1] === this.score_limit) {
             this.winner = this.users[1];
+            this.winner_name = this.users_names[1];
             this.update_status("endGame");
             clearInterval(this.game_initializer);
         }
@@ -546,6 +550,8 @@ let AppGateway = class AppGateway {
                         this.GameMode[i].queues[size - 1].emit_and_clear();
                         this.user_with_queue_id.delete(this.GameMode[i].queues[size - 1].users[0]);
                         this.user_with_queue_mode.delete(this.GameMode[i].queues[size - 1].users[0]);
+                        await this.edit_user_status(this.GameMode[i].queues[size - 1].users[0], "ON");
+                        await this.edit_user_status(this.GameMode[i].queues[size - 1].users[1], "ON");
                     }
                     if (this.GameMode[i].queues[size - 1].users.length === 2 && payload.state === 1) {
                         const game_modes = ["MODE1", "MODE2", "MODE3", "MODE2"];

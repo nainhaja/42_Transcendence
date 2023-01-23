@@ -128,7 +128,9 @@ function App() {
   const main_socket = useContext(main_socket_context);
   
   const [state, setState] = useState<any>({});
-
+  const socket = useRef(null as null | Socket);
+  const gameState = useRef(null as null | GameState);
+  
   const userData: IUserState = useSelector((state: any) => state.user);
 
   const dispatch = useDispatch();
@@ -148,7 +150,24 @@ function App() {
 
     main_socket.on("game_invite", (data: user_info) => {
          const notify = () =>{ 
-               toast(game_link(data));
+               toast(game_link(data), {
+              onClose: () => {
+
+                console.log("WA QAWAAAADA HADI1");
+                
+              socket.current = io("http://localhost:4000", {
+                withCredentials: true,
+              }).on("connect", () => {
+
+                socket.current?.on("queue_status", (data: GameState) => {
+                  gameState.current = data;
+                });
+                socket.current?.emit("invite_queue", { mode: 4, state: 0});
+                console.log("sir gah thawa layrhm bak")
+              });
+              }
+               });
+
            }
          notify();       
      })
@@ -167,6 +186,8 @@ function App() {
     <ToastContainer/>
       <Routes>
         <Route element={<RequireAuth />}>
+        <Route path='/game/*' element={<SketchPong/>} />
+            <Route path='/watch/*' element={<Spectator/>} />
           <Route path="/" element={<Dashboard />}>
             <Route index element={<Home />} />
             <Route path="/profile/*" element={<Profile />} />
@@ -176,8 +197,7 @@ function App() {
             />
              <Route path="/chat" element={<ChatPage/>} />
             <Route path="/friends" element={<Addfriend />} />
-            <Route path='/game/*' element={<SketchPong/>} />
-            <Route path='/watch/*' element={<Spectator/>} />
+
           </Route>
         </Route>
         <Route element={<NotRequireAuth />}>

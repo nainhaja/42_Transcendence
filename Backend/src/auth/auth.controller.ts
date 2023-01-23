@@ -16,7 +16,7 @@ export class AuthController {
     }
 
     @UseGuards(JwtGuard)
-    @Post('login/2fa/enable')
+    @Get('login/2fa/enable')
     async generate_qr_code(@Req() req, @Res() res) {
         return (this.authService.generate_qr_code(req.user_obj, res));
     }

@@ -17,6 +17,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BackGround from '../pages/background.jpg'
 import Sidebar from './../pages/Sidebar'
 import avatar1 from "./../Assets/question.jpg";
+import Botona from "../pages/Botona";
 
   
   // await axios.get( process.env.REACT_APP_BACKEND_URL+ "/chat/myChannels", 
@@ -82,9 +83,11 @@ const SketchPong = () => {
     if (socket.current != null)
       socket.current.emit("Game_Stopped");
     setState("Ended");
+    navigate("/");
   }
 
   function buttonPressed_2() {
+    navigate("/")
     //setState("Ended");
   }
 
@@ -207,20 +210,20 @@ const SketchPong = () => {
     const user_sec_name = user_two_name;
   
     return (
-      <div className="flex flex-row justify-between items-center bg-transparent py-1 my-4 w-2/4 bg-[#262626] hover:bg-mine-450 h-1/6 rounded-full ">
-      <div className="flex w-2/12  justify-around h-5/6 sm:h-3/6 md:h-5/6">
+      <div className="flex flex-row justify-between items-center bg-transparent py-1 my-4 w-3/4 bg-[#262626] hover:bg-black hover:text-red-600 h-[110px] rounded-full ">
+      <div className=" w-2/12  justify-around h-5/6 hidden md:flex ">
         <User_avatar_one />
       </div>
-      <div className="flex w-2/12 sm:text-sm lg:text-2xl text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg ">
+      <div className="flex w-2/12 sm:text-sm lg:text-2xl bg-[#1F9889] text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg ">
       {user_fr_name}
       </div>
-      <div className="flex  w-2/12 lg:text-3xl sm:text-base text-mine-540 items-center justify-center">
+      <div className="flex  w-2/12 lg:text-3xl sm:text-base text-yellow-600 items-center hover:text-red-600 justify-center">
       {user_fr_score} - {user_sec_score}
       </div>
-      <div className="flex  w-2/12 sm:text-sm lg:text-2xl text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg">
+      <div className="flex  w-2/12 sm:text-sm lg:text-2xl bg-[#1F9889] text-black items-center justify-center my-9 hover:text-black bg-mine-490 hover:bg-white rounded-lg">
       {user_sec_name}
       </div>
-      <div className="flex justify-between align-end w-2/12 sm:h-3/6 md:h-5/6  ">
+      <div className="md:flex  hidden align-end w-2/12  h-5/6 ">
         <User_avatar_two />
       </div>
       </div>
@@ -480,33 +483,55 @@ const SketchPong = () => {
   return <>
 
     
-      <div className="flex flex-row h-full w-full ">
+
               
-        <div className="flex flex-col items-center justify-center  w-5/6  bg-mine-520">
-          <div className="flex text-white font-sans text-6xl my-6"> Game </div>
-          <div className="flex flex-col justify-center items-center w-5/6 h-4/6">
+      <div className="flex h-screen  w-full scrollbar-hide overflow-y-scroll">
+      <div className="w-14 flex h-full flex-col items-center justify-between bg-black lg:hidden md:hidden">
+        <div className="m-3 w-10 h-10 bg-black">
+          <img src='logo.svg' alt="emmm" />
+        </div>
+        <div className="flex flex-col m-3 w-10">
+          <img className="py-3 w-9" src='dashboard.svg' alt="emmm" />
+          <img className="py-3 w-9" src='settings.svg' alt="emmm" />
+          <img className="py-3 w-9" src='addfriends.svg' alt="emmm" />
+          <img className="py-3 w-9" src='Chats.svg' alt="emmm" />
+          <img className="py-3 w-9" src='profile.svg' alt="emmm" />
+        </div>
+        <div className="mb-3">
+          <img className="py-3 w-9" src='logout.svg' alt="emmm" />
+        </div>
+      </div> 
+      <div className="w-1/6  lg:flex md:flex hidden overflow-y-scroll bg-black scrollbar-hide">
+        <div className="flex flex-grow items-center justify-center bg-black w-1/6  text-white">
+          <Sidebar />
+        </div>
+      </div>
+        <div className="sm:flex-wrap flex flex-grow py-6 w-2/6 bg-[#1a1b26] align-start items-center  justify-start align-center flex-col scrollbar-hide overflow-y-scroll">
+          <div className="flex text-white font-sans text-6xl my-6 w-full justify-center align-middle items-center tracking-wider"> Game 
+          </div>
+        <div className="flex flex-col justify-center items-center w-5/6 h-5/6">
             <Show_users_props/>
             <Sketch setup={setup} draw={draw} />
             <>{ state !== "Ended" ?
               
             
-                <a href="/"> <button onClick={() => {
+                 <Botona onClick={() => {
                 //alert()
                 buttonPressed();
               }}
               >
                 Quit Game
-              </button>
-              </a>
+              </Botona>
+              
               :
-              <a href="/"> <button onClick={() => {
+              <Botona onClick={() => {
                 //alert()
                 buttonPressed_2();
               }}
               >
                 Go back to menu
-              </button>
-              </a>
+              </Botona>
+              
 
           }
           </>
@@ -514,7 +539,8 @@ const SketchPong = () => {
 
                    
           </div>
-        </div>)        
+        </div>
+    )        
 
 
 

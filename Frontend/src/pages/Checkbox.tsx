@@ -1,5 +1,6 @@
 import { FC } from "react";
 import styled from "styled-components";
+import Botona from "./Botona";
 
 interface Props {
   name: string;
@@ -12,7 +13,7 @@ interface Props {
 
 const Checkbox: FC<Props> = ({ name, checked, setState, children, id, onClick }) => {
   return (
-    <Style onClick={onClick}>
+    <Botona onClick={onClick}>
       <input
         type="checkbox"
         checked={checked}
@@ -27,7 +28,7 @@ const Checkbox: FC<Props> = ({ name, checked, setState, children, id, onClick })
         </div>
         {children}
       </label>
-    </Style>
+    </Botona>
   );
 };
 

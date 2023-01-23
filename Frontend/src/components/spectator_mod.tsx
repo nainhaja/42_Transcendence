@@ -9,12 +9,13 @@ import { GameState } from "./Ball"
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from "socket.io-client";
-import { useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { stat } from "fs";
 import './../index.css';
 import './../App.css';
 import BackGround from '../pages/background.jpg'
 import Sidebar from "./../pages/Sidebar";
+import Botona from "../pages/Botona";
 interface live_games {
     count: number;
 }
@@ -40,7 +41,7 @@ const Spectator = () => {
 
   const [my_width, setWidth] = useState(window.innerWidth);
   const [m_height, setHeight] = useState(window.innerHeight);
-
+  const navigate = useNavigate();
 
   const [spect_game, setSpect_Game] = useState(0);
 
@@ -83,6 +84,11 @@ const Spectator = () => {
     //hh = c;
     //buttons.splice(0, c);
     //
+  }
+
+  function buttonPressed_2() {
+    //setState("Ended");
+    navigate("/")
   }
 
   useEffect(() => {
@@ -241,6 +247,32 @@ const Spectator = () => {
   
         };
 
+
+        const draw_Game_waiting = (p5: p5Types) => {
+          if (gameState.current != null && socket.current != null) {
+              
+  
+            let width = getWindowSize().innerWidth;
+            let height = getWindowSize().innerHeight;
+            
+              p5.fill(0);
+              p5.textSize(((relativeWidth) / 35));
+              p5.textAlign(p5.CENTER);
+              const scores = gameState.current.scores;
+              const scoresSum = scores[0] + scores[1];
+              
+                // this is in case it's a spectator he can only watch without interfering in the game because his id couldn't be find 
+                // in the players id array 
+                p5.text("Waiting for players to continue the game ",
+                  (width) / 4,
+                  width / 16
+                );
+              
+            
+          }
+  
+        };
+
         //console.log("nadi " + layhfdk); 
         p5.resizeCanvas(window.innerWidth /2 , window.innerWidth/4);
         p5.background(122);
@@ -387,7 +419,9 @@ const Spectator = () => {
             //console.log("Asbhan lah " + gameState.current.state);
             // p5.resizeCanvas(getWindowSize().innerWidth   , relativeHeight);
             // p5.background(122);
-            if (spect_game === 0)
+            if (gameState.current.state === "scored")
+              draw_Game_waiting(p5)
+            else if ( gameState.current.winner === "")
             {
               drawClickToStartText(p5);
               p5.fill(0);
@@ -403,7 +437,7 @@ const Spectator = () => {
             }
             else 
               draw_Game_ended(p5)
-            
+          
             }
     }
   
@@ -415,6 +449,16 @@ const Spectator = () => {
   <div className="flex flex-col justify-center items-center w-5/6 h-4/6">
     <Show_users_props/>
     <Sketch setup={setup} draw={draw} />
+    
+     <Botona onClick={() => {
+                //alert()
+                buttonPressed_2();
+              }}
+              >
+                Go back to menu
+              </Botona>
+              
+    
   </div>
 
            

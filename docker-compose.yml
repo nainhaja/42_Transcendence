@@ -1,0 +1,59 @@
+version: '3'
+services:
+  pg_db:
+    container_name: pg_container
+    image: 'postgres:latest'
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: nest_db
+    networks:
+      - myProject
+networks:
+  myProject:
+
+
+# version: '3'
+# services:
+#   pg_db:
+#     container_name: pg_container
+#     image: 'postgres:latest'
+#     ports:
+#       - 5434:5432
+#     environment:
+#       POSTGRES_USER: user
+#       POSTGRES_PASSWORD: password
+#       POSTGRES_DB: nest_db
+#     networks:
+#       - myProject
+#     volumes: 
+#       - database:/var/lib/postgresql/data
+#   backend:
+#     build:
+#       context: ./Backend
+#       args:
+#         NODE_ENV: production
+#       dockerfile: 'Dockerfile'
+#     ports:
+#       - 5000:5000
+#     networks:
+#       - myProject
+#   frontend:
+#     build:
+#       context: ./Frontend
+#       args:
+#         NODE_ENV: production
+#       dockerfile: 'Dockerfile'
+#     # command: npm run start
+#     ports:
+#       - 3000:3000
+#     networks:
+#       - myProject
+
+# volumes:
+#   database: {}
+
+# networks:
+#   myProject:

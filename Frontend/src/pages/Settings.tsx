@@ -8,6 +8,7 @@ import Checkbox from "./Checkbox";
 import { Usercontext } from "../context/Usercontext";
 import Swal from 'sweetalert2'
 import { Navigate, useNavigate } from "react-router-dom";
+import Botona from "./Botona";
 
 
 type DataType = {
@@ -21,7 +22,7 @@ const Settings = ({ state }: { state: boolean }) => {
   const [avatar, NewAvatar] = useState('');
   const [Username, setUsername] = useState("");
   const [updated, setUpdated] = useState(true);
-
+  const [enabled, setEnabled] = useState(true);
   const handleModal = async () => {
     console.log("sanfrasisco : " + isChecked);
     if (!isChecked) {
@@ -77,62 +78,81 @@ const Settings = ({ state }: { state: boolean }) => {
       GetUser(res.data.full_name);
       NewAvatar(res.data.avatar);
       setUsername(res.data.username);
+      setEnabled(res.data.is_two_fa_enable);
     }).catch(err => {
       console.log(err)
     })
 
   return (
-    <div className="w-[1021px] min-h-screen">
-      <h1 className="text-[77px] text-[#F2F2F2] text-center font-[700] tracking-wider">
+    <div className="flex flex-col w-full overflow-y-scroll scrollbar-hide">
+      <h1 className="text-[77px] text-[#F2F2F2] text-center font-[700] tracking-wider ">
         Settings
       </h1>
-      <div className="mt-[46px]">
+      <section className="flex sm:flex-row-reverse justify-center py-4 gap-x-8 flex-col px-4">
         {/* -------- profile info --------- */}
-        <div>
           {/* ------ left side ----- */}
-          <div className="flex items-center gap-[40px]">
-            <div>
+          <figure className="flex flex-col justify-center items-center gap-y-5">
               <img
-                className="w-[140px] h-[140px] object-contain"
+                className="h-72 w-72 rounded-full"
                 src={avatar}
                 alt="avatar"
               />
-            </div>
             <div>
-              <h1 className="text-[24px] font-[500] tracking-wider text-[#F2F2F2]">
+            <h1 className="text-[24px] font-[500] tracking-wider text-[#F2F2F2] capitalize">
                 {User}
               </h1>
               <h6 className="text-[#828282] text-[20px] tracking-wider">
                 {Username}
               </h6>
             </div>
-          </div>
-        </div>
+            </figure>
         {/* ------ top part ------- */}
-        <div className="mt-[108px]">
+
+
+        <div className="h-full py-10">
           <DisplayName setUser={GetUser} setAvatar={NewAvatar} />
-        </div>
+        
         {/* ------ bottom part ------ */}
-        <div className="mt-[144px] flex items-center gap-[44px]">
-          <div>
-            <Checkbox onClick={handleModal} name="isTwoFactor" id="two-factor" checked={isChecked}>
+        <div className="flex gap-x-3">
+
+            <Checkbox onClick={handleModal}  name="isTwoFactor" id="two-factor" checked={isChecked}>
               Two Factor Authentication
             </Checkbox>
+
+
+            
+
+            { !enabled ?
             <TwoFactor
               isOpen={twoFactorModal}
               setIsOpen={setModal}
               contentLabel="SCAN QR CODE"
               setTwoFactor={setIsChecked}
-            />
+            /> 
+            : <></>  
+          } 
             <br />
-          </div>
+
+
+
+          
           <div>
-            <button onClick={handleDisable} name="disable">
+            {/* <button onClick={handleDisable} name="disable">
               Disable Two-Fa-Authentificatios.<br /> "Only Click Here if You Are Already Enabled this Feature"
-            </button>
+            </button> */}
+
+            <Botona onClick={handleDisable} name="disable">
+              Disable Two-Fa-Authentificatios.
+            </Botona>
+
+
+            
           </div>
+
+
         </div>
-      </div>
+        </div>
+      </section>
     </div>
   );
 

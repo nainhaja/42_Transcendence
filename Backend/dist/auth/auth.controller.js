@@ -45,7 +45,7 @@ __decorate([
 ], AuthController.prototype, "login", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
-    (0, common_1.Post)('login/2fa/enable'),
+    (0, common_1.Get)('login/2fa/enable'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
