@@ -205,7 +205,7 @@ class Game {
     this.room = "";
 
     this.scores = [0,0];
-    this.score_limit = 3;
+    this.score_limit = 1;
     this.winner = "";
     this.winner_name = "";
     this.lastscored = "";
@@ -374,6 +374,8 @@ class Game {
       
       clearInterval(this.game_initializer);
       this.server.to(this.room).emit("It_ended");
+
+      
     }
     else if (this.scores[1] === this.score_limit)
     {
@@ -709,11 +711,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       const q_mode: number = this.user_with_queue_mode.get(user.id);
       const user_status : UserStatus = "INQUEUE";
       const on_status : UserStatus = "ON";
-      //this.logger.log(`User with the id  ${player_ref.id} just logged out`);
-      if  (user.id === this.GameMode[q_mode].queues[user_id].users[0])
-        this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[0] , this.GameMode[q_mode].queues[user_id].users_names[1]);
+      console.log("hana tani "+user.id);
+
+      if (this.GameMode[q_mode].queues[user_id].players_names.length === 2)
+      {
+        if  (user.id === this.GameMode[q_mode].queues[user_id].users[0])
+        this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[0] , this.GameMode[q_mode].queues[user_id].players_names[1]);
       else 
-        this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[1] , this.GameMode[q_mode].queues[user_id].users_names[0]);
+        this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[1] , this.GameMode[q_mode].queues[user_id].players_names[0]);
         
         this.GameMode[q_mode].queues[user_id].update_status("ended");
         this.GameMode[q_mode].queues[user_id].emit_and_clear();
@@ -814,10 +819,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           await this.edit_user_status(this.GameMode[q_mode].queues[user_id].users[0], on_status);
           await this.edit_user_status(this.GameMode[q_mode].queues[user_id].users[1], on_status);          
         }
-        else 
-        {
-          await this.edit_user_status(user.id, on_status);
-        }
+
+      }
+      else 
+      {
+        await this.edit_user_status(user.id, on_status);
+        this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[0]);
+        this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[0]);
+        this.GameMode[q_mode].queues[user_id].update_status("stopped");
+        console.log("yarbk chawa hada");
+      }
+         
+      //this.logger.log(`User with the id  ${player_ref.id} just logged out`);
+      
       // ////console.log("New status before discornecting is "+ await this.get_user_status(user.id));
     }  
   }
@@ -955,8 +969,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     const user_id: number = this.user_with_queue_id.get(user.id);
     const user_mode:number =  this.user_with_queue_mode.get(user.id);
     // let user_mode = payload.mode - 1;
-    if (user)
+    
+    if (user && this.GameMode[user_mode])
     { 
+      console.log("reached herox");
         const gameox = await this.prismaService.game.findUnique({
           where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0])} 
         });
@@ -977,11 +993,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           const user2 = await this.prismaService.user.findUnique({
             where: {id: this.GameMode[user_mode].queues[user_id].users[1] }
           });
-          
+          console.log("reached herox2");
           if  (user.id === this.GameMode[user_mode].queues[user_id].users[0])
-            this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[0] , this.GameMode[user_mode].queues[user_id].users_names[1]);
+            this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[0] , this.GameMode[user_mode].queues[user_id].players_names[1]);
           else 
-            this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[1] , this.GameMode[user_mode].queues[user_id].users_names[0]);
+            this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[1] , this.GameMode[user_mode].queues[user_id].players_names[0]);
           
           this.GameMode[user_mode].queues[user_id].update_status("ended");
           this.GameMode[user_mode].queues[user_id].emit_and_clear();
@@ -1083,6 +1099,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           this.get_user_score(this.GameMode[user_mode].queues[user_id].users[0]);
           this.get_user_score(this.GameMode[user_mode].queues[user_id].users[1]);
   
+          await this.edit_user_status(this.GameMode[user_mode].queues[user_id].users[0], "ON");
+          await this.edit_user_status(this.GameMode[user_mode].queues[user_id].users[1], "ON");   
+
           this.user_achievements(this.GameMode[user_mode].queues[user_id].users[0]);
           this.user_achievements(this.GameMode[user_mode].queues[user_id].users[1]);
 
@@ -1090,6 +1109,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           this.user_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].users[1]);
           this.user_with_queue_mode.delete(this.GameMode[user_mode].queues[user_id].users[0]);
           this.user_with_queue_mode.delete(this.GameMode[user_mode].queues[user_id].users[1]);
+
+
           
           
         }
@@ -1303,15 +1324,15 @@ async joinRoom(socket: Socket, payload: any)
           socket.join(room_id);
           size = 1;
         } 
-        else if (this.GameMode[i].queues[size - 1].state === "ended")
+        else if (this.GameMode[i].queues[size - 1].state === "ended" || this.GameMode[i].queues[size - 1].state === "stopped")
         {
-          //console.log("Wselt hna");
+          console.log("Wselt hna");
           this.GameMode[i].queues.push(new Game(this.server));
           size = this.GameMode[i].queues.length;
           this.GameMode[i].queues[size - 1].update_room(room_id);
           socket.join(room_id); 
         }
-        else if (this.GameMode[i].queues[size - 1].users.length === 2)
+        else if (this.GameMode[i].queues[size - 1].players_names.length === 2)
         {
           this.GameMode[i].queues.push(new Game(this.server));
           size = this.GameMode[payload.mode-1].queues.length;
@@ -1319,7 +1340,7 @@ async joinRoom(socket: Socket, payload: any)
           socket.join(room_id);
         }
 
-        else if (this.GameMode[i].queues[size - 1].users.length === 1)
+        else if (this.GameMode[i].queues[size - 1].players_names.length === 1)
         {
           ////console.log("Wselt ta hna");
           socket.join(this.GameMode[i].queues[size - 1].room); 

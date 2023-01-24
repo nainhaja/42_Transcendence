@@ -140,6 +140,7 @@ const SketchPong = () => {
 
         let val_e = data;
         const game_mod : number =  + (window.location.pathname.split("/")[2]);
+        console.log(game_mod);
         socket.current?.emit("GameEnded",{ mode: game_mod });
         //console.log("wch a 3chiri " + layhfdk);
       });

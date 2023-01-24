@@ -363,88 +363,95 @@ let AppGateway = class AppGateway {
             const q_mode = this.user_with_queue_mode.get(user.id);
             const user_status = "INQUEUE";
             const on_status = "ON";
-            if (user.id === this.GameMode[q_mode].queues[user_id].users[0])
-                this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[0], this.GameMode[q_mode].queues[user_id].users_names[1]);
-            else
-                this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[1], this.GameMode[q_mode].queues[user_id].users_names[0]);
-            this.GameMode[q_mode].queues[user_id].update_status("ended");
-            this.GameMode[q_mode].queues[user_id].emit_and_clear();
-            for (let i = 0; i < this.GameMode[q_mode].queues[user_id].players.length; i++)
-                this.socket_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].players[i]);
-            const user1 = await this.prismaService.user.findUnique({
-                where: { id: this.GameMode[q_mode].queues[user_id].users[0] }
-            });
-            const user2 = await this.prismaService.user.findUnique({
-                where: { id: this.GameMode[q_mode].queues[user_id].users[1] }
-            });
-            if (user1.id === user.id) {
-                await this.prismaService.user.update({
-                    where: { id: user2.id },
-                    data: {
-                        win: user2.win + 1,
-                        win_streak: user2.win_streak + 1,
-                        status: "ON",
-                    }
+            console.log("hana tani " + user.id);
+            if (this.GameMode[q_mode].queues[user_id].players_names.length === 2) {
+                if (user.id === this.GameMode[q_mode].queues[user_id].users[0])
+                    this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[0], this.GameMode[q_mode].queues[user_id].players_names[1]);
+                else
+                    this.GameMode[q_mode].queues[user_id].update_winner(this.GameMode[q_mode].queues[user_id].users[1], this.GameMode[q_mode].queues[user_id].players_names[0]);
+                this.GameMode[q_mode].queues[user_id].update_status("ended");
+                this.GameMode[q_mode].queues[user_id].emit_and_clear();
+                for (let i = 0; i < this.GameMode[q_mode].queues[user_id].players.length; i++)
+                    this.socket_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].players[i]);
+                const user1 = await this.prismaService.user.findUnique({
+                    where: { id: this.GameMode[q_mode].queues[user_id].users[0] }
                 });
-                await this.prismaService.user.update({
-                    where: { id: user1.id },
-                    data: {
-                        lose: user1.lose + 1,
-                        win_streak: 0,
-                        status: "ON",
-                    }
+                const user2 = await this.prismaService.user.findUnique({
+                    where: { id: this.GameMode[q_mode].queues[user_id].users[1] }
                 });
-            }
-            else {
-                await this.prismaService.user.update({
-                    where: { id: user1.id },
-                    data: {
-                        win: user1.win + 1,
-                        win_streak: user1.win_streak + 1,
-                        status: "ON",
-                    }
+                if (user1.id === user.id) {
+                    await this.prismaService.user.update({
+                        where: { id: user2.id },
+                        data: {
+                            win: user2.win + 1,
+                            win_streak: user2.win_streak + 1,
+                            status: "ON",
+                        }
+                    });
+                    await this.prismaService.user.update({
+                        where: { id: user1.id },
+                        data: {
+                            lose: user1.lose + 1,
+                            win_streak: 0,
+                            status: "ON",
+                        }
+                    });
+                }
+                else {
+                    await this.prismaService.user.update({
+                        where: { id: user1.id },
+                        data: {
+                            win: user1.win + 1,
+                            win_streak: user1.win_streak + 1,
+                            status: "ON",
+                        }
+                    });
+                    await this.prismaService.user.update({
+                        where: { id: user2.id },
+                        data: {
+                            lose: user2.lose + 1,
+                            win_streak: 0,
+                            status: "ON",
+                        }
+                    });
+                }
+                const games = await this.prismaService.game.findMany({
+                    where: {
+                        OR: [
+                            { user1: { id: this.GameMode[q_mode].queues[user_id].users[0] } },
+                            { user2: { id: this.GameMode[q_mode].queues[user_id].users[1] } }
+                        ]
+                    },
+                    take: 1,
+                    orderBy: {
+                        id: 'desc'
+                    },
                 });
-                await this.prismaService.user.update({
-                    where: { id: user2.id },
-                    data: {
-                        lose: user2.lose + 1,
-                        win_streak: 0,
-                        status: "ON",
-                    }
+                const updatedGame = await this.prismaService.game.update({
+                    where: { id: games[0].id },
+                    data: { user1_score: this.GameMode[q_mode].queues[user_id].scores[0],
+                        user2_score: this.GameMode[q_mode].queues[user_id].scores[1] }
                 });
-            }
-            const games = await this.prismaService.game.findMany({
-                where: {
-                    OR: [
-                        { user1: { id: this.GameMode[q_mode].queues[user_id].users[0] } },
-                        { user2: { id: this.GameMode[q_mode].queues[user_id].users[1] } }
-                    ]
-                },
-                take: 1,
-                orderBy: {
-                    id: 'desc'
-                },
-            });
-            const updatedGame = await this.prismaService.game.update({
-                where: { id: games[0].id },
-                data: { user1_score: this.GameMode[q_mode].queues[user_id].scores[0],
-                    user2_score: this.GameMode[q_mode].queues[user_id].scores[1] }
-            });
-            this.get_user_score(user1.id);
-            this.get_user_score(user2.id);
-            this.user_achievements(user1.id);
-            this.user_achievements(user2.id);
-            this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[0]);
-            this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[1]);
-            this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[0]);
-            this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[1]);
-            let game_len = this.GameMode[q_mode].queues[user_id].players.length;
-            if (game_len >= 2) {
-                await this.edit_user_status(this.GameMode[q_mode].queues[user_id].users[0], on_status);
-                await this.edit_user_status(this.GameMode[q_mode].queues[user_id].users[1], on_status);
+                this.get_user_score(user1.id);
+                this.get_user_score(user2.id);
+                this.user_achievements(user1.id);
+                this.user_achievements(user2.id);
+                this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[0]);
+                this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[1]);
+                this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[0]);
+                this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[1]);
+                let game_len = this.GameMode[q_mode].queues[user_id].players.length;
+                if (game_len >= 2) {
+                    await this.edit_user_status(this.GameMode[q_mode].queues[user_id].users[0], on_status);
+                    await this.edit_user_status(this.GameMode[q_mode].queues[user_id].users[1], on_status);
+                }
             }
             else {
                 await this.edit_user_status(user.id, on_status);
+                this.user_with_queue_id.delete(this.GameMode[q_mode].queues[user_id].users[0]);
+                this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[user_id].users[0]);
+                this.GameMode[q_mode].queues[user_id].update_status("stopped");
+                console.log("yarbk chawa hada");
             }
         }
     }
@@ -546,7 +553,8 @@ let AppGateway = class AppGateway {
         const user = await this.getUserFromSocket(socket);
         const user_id = this.user_with_queue_id.get(user.id);
         const user_mode = this.user_with_queue_mode.get(user.id);
-        if (user) {
+        if (user && this.GameMode[user_mode]) {
+            console.log("reached herox");
             const gameox = await this.prismaService.game.findUnique({
                 where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0]) }
             });
@@ -564,10 +572,11 @@ let AppGateway = class AppGateway {
                 const user2 = await this.prismaService.user.findUnique({
                     where: { id: this.GameMode[user_mode].queues[user_id].users[1] }
                 });
+                console.log("reached herox2");
                 if (user.id === this.GameMode[user_mode].queues[user_id].users[0])
-                    this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[0], this.GameMode[user_mode].queues[user_id].users_names[1]);
+                    this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[0], this.GameMode[user_mode].queues[user_id].players_names[1]);
                 else
-                    this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[1], this.GameMode[user_mode].queues[user_id].users_names[0]);
+                    this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[1], this.GameMode[user_mode].queues[user_id].players_names[0]);
                 this.GameMode[user_mode].queues[user_id].update_status("ended");
                 this.GameMode[user_mode].queues[user_id].emit_and_clear();
                 for (let i = 0; i < this.GameMode[user_mode].queues[user_id].players.length; i++)
@@ -650,6 +659,8 @@ let AppGateway = class AppGateway {
                 this.GameMode[user_mode].queues[user_id].scores[1] = 0;
                 this.get_user_score(this.GameMode[user_mode].queues[user_id].users[0]);
                 this.get_user_score(this.GameMode[user_mode].queues[user_id].users[1]);
+                await this.edit_user_status(this.GameMode[user_mode].queues[user_id].users[0], "ON");
+                await this.edit_user_status(this.GameMode[user_mode].queues[user_id].users[1], "ON");
                 this.user_achievements(this.GameMode[user_mode].queues[user_id].users[0]);
                 this.user_achievements(this.GameMode[user_mode].queues[user_id].users[1]);
                 this.user_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].users[0]);
@@ -785,19 +796,20 @@ let AppGateway = class AppGateway {
                     socket.join(room_id);
                     size = 1;
                 }
-                else if (this.GameMode[i].queues[size - 1].state === "ended") {
+                else if (this.GameMode[i].queues[size - 1].state === "ended" || this.GameMode[i].queues[size - 1].state === "stopped") {
+                    console.log("Wselt hna");
                     this.GameMode[i].queues.push(new Game(this.server));
                     size = this.GameMode[i].queues.length;
                     this.GameMode[i].queues[size - 1].update_room(room_id);
                     socket.join(room_id);
                 }
-                else if (this.GameMode[i].queues[size - 1].users.length === 2) {
+                else if (this.GameMode[i].queues[size - 1].players_names.length === 2) {
                     this.GameMode[i].queues.push(new Game(this.server));
                     size = this.GameMode[payload.mode - 1].queues.length;
                     this.GameMode[i].queues[size - 1].update_room(room_id);
                     socket.join(room_id);
                 }
-                else if (this.GameMode[i].queues[size - 1].users.length === 1) {
+                else if (this.GameMode[i].queues[size - 1].players_names.length === 1) {
                     socket.join(this.GameMode[i].queues[size - 1].room);
                     this.cpt++;
                 }
@@ -846,7 +858,7 @@ let AppGateway = class AppGateway {
                 if (payload.mode === 1)
                     this.GameMode[user_mode].queues[user_id].ball_speed = 0.75;
                 else if (payload.mode === 2 || payload.mode === 4)
-                    this.GameMode[user_mode].queues[user_id].ball_speed = 0.25;
+                    this.GameMode[user_mode].queues[user_id].ball_speed = 1.75;
                 else if (payload.mode === 3)
                     this.GameMode[user_mode].queues[user_id].ball_speed = 2.75;
                 x = 1;

@@ -123,7 +123,7 @@ const Spect = () => {
         className=" h-3/12 px-[1.5rem] scrollbar-hide overflow-hidden overflow-y-scroll py-[1rem] rounded-[20px] flex flex-col  bg-[#262626] text-white text-[24px] mb-[12px] font-[600]"> 
         {Array.from({ length: live_qs}, (v, i) => i + 1).map(i => (
           <>
-          {player !== user_arr[i-1].user_1_name &&  player !== user_arr[i-1].user_2_name? 
+          {index !== -1? 
             <a href={`/watch/${i}`} className=" bg-[#1F9889] flex flex-row  rounded-full  text-base my-5 items-center hover:bg-[#C66AE1] text-center">
             
                 <div className="h-5/6 w-6/12 flex  flex-row text-white text-base text-center">
