@@ -413,6 +413,23 @@ let AppGateway = class AppGateway {
                     }
                 });
             }
+            const games = await this.prismaService.game.findMany({
+                where: {
+                    OR: [
+                        { user1: { id: this.GameMode[q_mode].queues[user_id].users[0] } },
+                        { user2: { id: this.GameMode[q_mode].queues[user_id].users[1] } }
+                    ]
+                },
+                take: 1,
+                orderBy: {
+                    id: 'desc'
+                },
+            });
+            const updatedGame = await this.prismaService.game.update({
+                where: { id: games[0].id },
+                data: { user1_score: this.GameMode[q_mode].queues[user_id].scores[0],
+                    user2_score: this.GameMode[q_mode].queues[user_id].scores[1] }
+            });
             this.get_user_score(user1.id);
             this.get_user_score(user2.id);
             this.user_achievements(user1.id);
@@ -726,7 +743,8 @@ let AppGateway = class AppGateway {
                         await this.edit_user_status(this.GameMode[i].queues[size - 1].users[1], "ON");
                     }
                 }
-                else if (this.GameMode[i].queues[size - 1].users_names.length === 2 && payload.state === 2) {
+                else if (this.GameMode[i].queues[size - 1].players_names.length === 2 && payload.state === 2) {
+                    console.log("Here tani");
                     const game_modes = ["MODE1", "MODE2", "MODE3", "MODE2"];
                     const game = await this.prismaService.game.create({
                         data: {

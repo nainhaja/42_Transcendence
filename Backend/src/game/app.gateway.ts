@@ -205,7 +205,7 @@ class Game {
     this.room = "";
 
     this.scores = [0,0];
-    this.score_limit = 1;
+    this.score_limit = 3;
     this.winner = "";
     this.winner_name = "";
     this.lastscored = "";
@@ -768,6 +768,26 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
               }
             });
           }
+
+          const games = await this.prismaService.game.findMany({
+            where: {
+              OR: [
+                { user1: { id: this.GameMode[q_mode].queues[user_id].users[0] } },
+                { user2: { id: this.GameMode[q_mode].queues[user_id].users[1] } }
+              ]
+            },
+            take: 1,
+            orderBy: {
+              id: 'desc'
+            },
+          });
+
+            const updatedGame = await this.prismaService.game.update({
+              where: { id: games[0].id},
+              data: { user1_score: this.GameMode[q_mode].queues[user_id].scores[0]
+                , user2_score: this.GameMode[q_mode].queues[user_id].scores[1]}
+            });      
+
           this.get_user_score(user1.id);
           this.get_user_score(user2.id);
 
@@ -1216,9 +1236,9 @@ async invite_qu(socket: Socket, payload: any)
 
              
           }
-          else if (this.GameMode[i].queues[size - 1].users_names.length === 2 && payload.state === 2)
+          else if (this.GameMode[i].queues[size - 1].players_names.length === 2 && payload.state === 2)
           {
-            //console.log("Here tani");
+            console.log("Here tani");
             const game_modes: any[] = ["MODE1", "MODE2", "MODE3", "MODE2"]; 
             ////console.log("Ha mode diali "+game_modes[i]);
             const game = await this.prismaService.game.create({
@@ -1366,7 +1386,7 @@ async joinRoom(socket: Socket, payload: any)
         if (payload.mode === 1)
             this.GameMode[user_mode].queues[user_id].ball_speed = 0.75;
           else if (payload.mode === 2 || payload.mode === 4)
-            this.GameMode[user_mode].queues[user_id].ball_speed = 0.25;
+            this.GameMode[user_mode].queues[user_id].ball_speed = 1.75;
           else if (payload.mode === 3)
             this.GameMode[user_mode].queues[user_id].ball_speed = 2.75;      
           x = 1;
