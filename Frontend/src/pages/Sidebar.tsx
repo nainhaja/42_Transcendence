@@ -10,6 +10,7 @@ import { BiHeart } from "react-icons/bi";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { logout } from "../reducers/UserSlice";
+import { useSpring, animated } from '@react-spring/web'
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -32,12 +33,24 @@ const Sidebar = () => {
 
       });
   };
-
+  const gohome = () =>{
+    navigate("/")
+  }
+  const [isHovered, setIsHovered] = useState(false);
+  const animationProps = useSpring({
+    transform: isHovered? 'scale(1.25)' : 'scale(1)',
+    from:{
+      transform: 'scale(1)'
+    }
+  });
+  const handleMouseEnter = () =>setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
+ 
   return (
-    <div className="flex flex-col items-center  whitespace-nowrap text-white">
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="flex flex-col items-center  whitespace-nowrap text-white">
       {/* -------- logo --------- */}
       <div>
-        <img src={logo} alt="logo" />
+        <animated.img style={animationProps} src={logo} alt="logo" onClick={gohome} />
       </div>
       {/* ---------- nav list -------- */}
       <div className="mt-[108px]">
@@ -113,3 +126,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+

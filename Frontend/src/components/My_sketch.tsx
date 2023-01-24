@@ -241,15 +241,19 @@ const SketchPong = () => {
     if (gameState.current != null) {
      
       const game_mode : number =  + (window.location.pathname.split("/")[2]);
-      if (gameState.current.scores[0] == gameState.current.score_limit)
+      if (gameState.current.state === "endGame")
       {
-        
-        socket.current?.emit("GameEnded",{ mode: game_mode });
+        if (gameState.current.scores[0] === gameState.current.score_limit)
+        {
+          
+          socket.current?.emit("GameEnded",{ mode: game_mode });
+        }
+        else if (gameState.current.scores[1] === gameState.current.score_limit)
+        {
+          socket.current?.emit("GameEnded",{ mode: game_mode });
+        }
       }
-      else if (gameState.current.scores[1] == gameState.current.score_limit)
-      {
-        socket.current?.emit("GameEnded",{ mode: game_mode });
-      }
+
       setUserone(gameState.current.players_avatar[0]);
       setUsertwo(gameState.current.players_avatar[1]);
 

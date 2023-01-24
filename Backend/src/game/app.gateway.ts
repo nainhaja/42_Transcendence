@@ -205,7 +205,7 @@ class Game {
     this.room = "";
 
     this.scores = [0,0];
-    this.score_limit = 2;
+    this.score_limit = 1;
     this.winner = "";
     this.winner_name = "";
     this.lastscored = "";
@@ -935,7 +935,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         
         if (gameox.status !== StatusGame.FINISHED)
         {
-          
           const updatedGame = await this.prismaService.game.update({
             where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0])},
             data: { user1_score: this.GameMode[user_mode].queues[user_id].scores[0]
@@ -949,6 +948,17 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
             where: {id: this.GameMode[user_mode].queues[user_id].users[1] }
           });
           
+          if  (user.id === this.GameMode[user_mode].queues[user_id].users[0])
+            this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[0] , this.GameMode[user_mode].queues[user_id].users_names[1]);
+          else 
+            this.GameMode[user_mode].queues[user_id].update_winner(this.GameMode[user_mode].queues[user_id].users[1] , this.GameMode[user_mode].queues[user_id].users_names[0]);
+          
+          this.GameMode[user_mode].queues[user_id].update_status("ended");
+          this.GameMode[user_mode].queues[user_id].emit_and_clear();
+
+          for(let i=0;i < this.GameMode[user_mode].queues[user_id].players.length; i++)
+            this.socket_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].players[i]);
+
           if (this.GameMode[user_mode].queues[user_id].scores[0] === 2)
           {
               await this.prismaService.user.update({
@@ -1037,12 +1047,22 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
           this.GameMode[user_mode].queues[user_id].scores[0] = 0;
           this.GameMode[user_mode].queues[user_id].scores[1] = 0;
-        }
-        this.get_user_score(this.GameMode[user_mode].queues[user_id].users[0]);
-        this.get_user_score(this.GameMode[user_mode].queues[user_id].users[1]);
+          this.get_user_score(this.GameMode[user_mode].queues[user_id].users[0]);
+          this.get_user_score(this.GameMode[user_mode].queues[user_id].users[1]);
+  
+          this.user_achievements(this.GameMode[user_mode].queues[user_id].users[0]);
+          this.user_achievements(this.GameMode[user_mode].queues[user_id].users[1]);
 
-        this.user_achievements(this.GameMode[user_mode].queues[user_id].users[0]);
-        this.user_achievements(this.GameMode[user_mode].queues[user_id].users[1]);
+          this.user_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].users[0]);
+          this.user_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].users[1]);
+          this.user_with_queue_mode.delete(this.GameMode[user_mode].queues[user_id].users[0]);
+          this.user_with_queue_mode.delete(this.GameMode[user_mode].queues[user_id].users[1]);
+          
+          
+        }
+
+
+
     }
   }
   async edit_user_status(user_id : string, status : UserStatus){
@@ -1232,8 +1252,10 @@ async joinRoom(socket: Socket, payload: any)
     ////console.log("My user is " + user.username);
     const room_id: string = user.id;
     let i:number = payload.mode - 1;
+   
     if (!this.user_with_queue_id.has(user.id) && payload.state === 1)
     {
+      console.log("Ya zebi");
       //console.log("Here  "+user.username);
       ////console.log("HEre tani "+payload.mode)
       //
@@ -1250,7 +1272,7 @@ async joinRoom(socket: Socket, payload: any)
         } 
         else if (this.GameMode[i].queues[size - 1].state === "ended")
         {
-          //console.log("Wselt hna");
+          console.log("Wselt hna");
           this.GameMode[i].queues.push(new Game(this.server));
           size = this.GameMode[payload.mode-1].queues.length;
           this.GameMode[i].queues[size - 1].update_room(room_id);
@@ -1303,7 +1325,7 @@ async joinRoom(socket: Socket, payload: any)
     
     else if (this.user_with_queue_id.has(user.id))
     {
-      //console.log("Ha hna bdina f qwada");
+      console.log("Ha hna bdina f qwada");
       const user_id: number = this.user_with_queue_id.get(user.id);
       const us_mode: number = this.user_with_queue_mode.get(user.id);
 
