@@ -267,7 +267,19 @@ export class UserService {
           throw new HttpException('User blocked', HttpStatus.BAD_REQUEST);
         }
       }
+      /*
+      
+          try {
 
+            
+          } catch {
+          throw new HttpException(
+            'Error',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+    
+      */ 
       for (let i = 0; i < friend_blocked.blocked.length; i++) {
         // console.log(friend_blocked.blocked[i].username + " | " + user.username)
         if (friend_blocked.blocked[i].username == user.username) {

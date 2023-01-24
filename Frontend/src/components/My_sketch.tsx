@@ -105,6 +105,9 @@ const SketchPong = () => {
         setLayhfdk(+ data);
         //console.log("wch a 3chiri " + layhfdk);
       });      
+
+
+      
     }
    // setState("play");
     setCpt(Cpt + 1);
@@ -129,7 +132,17 @@ const SketchPong = () => {
             setLayhfdk(+ data);
             //console.log("wch a 3chiri " + layhfdk);
           });
+          
       }
+
+      if (socket.current != null)
+      socket.current.on('It_ended', (data) => {
+
+        let val_e = data;
+        const game_mod : number =  + (window.location.pathname.split("/")[2]);
+        socket.current?.emit("GameEnded",{ mode: game_mod });
+        //console.log("wch a 3chiri " + layhfdk);
+      });
 
       socket.current?.on("queue_status", (data: GameState) => {
 
@@ -241,18 +254,18 @@ const SketchPong = () => {
     if (gameState.current != null) {
      
       const game_mode : number =  + (window.location.pathname.split("/")[2]);
-      if (gameState.current.state === "endGame")
-      {
-        if (gameState.current.scores[0] === gameState.current.score_limit)
-        {
+      // if (gameState.current.state === "endGame")
+      // {
+      //   if (gameState.current.scores[0] === gameState.current.score_limit)
+      //   {
           
-          socket.current?.emit("GameEnded",{ mode: game_mode });
-        }
-        else if (gameState.current.scores[1] === gameState.current.score_limit)
-        {
-          socket.current?.emit("GameEnded",{ mode: game_mode });
-        }
-      }
+      //     socket.current?.emit("GameEnded",{ mode: game_mode });
+      //   }
+      //   else if (gameState.current.scores[1] === gameState.current.score_limit)
+      //   {
+      //     socket.current?.emit("GameEnded",{ mode: game_mode });
+      //   }
+      // }
 
       setUserone(gameState.current.players_avatar[0]);
       setUsertwo(gameState.current.players_avatar[1]);

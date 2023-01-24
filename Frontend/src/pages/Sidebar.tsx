@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../Assets/logo.png";
 import sideBarImg from "../Assets/Rectangle 363.png";
 import { RxDashboard } from "react-icons/rx";
@@ -17,7 +17,21 @@ const Sidebar = () => {
   const [off, setoff] = useState(false);
 
   const dispatch = useDispatch();
+  const [User, SetUser] = useState<any>({});
 
+  useEffect(() => {
+
+    axios.get("http://localhost:5000/user/user", {withCredentials: true})
+    .then((response) =>{
+        console.log("nigga" + response.status)
+        
+        SetUser(response.data);
+      }).catch(error => 
+        {  
+          console.log("nigga" + error.response.status)
+          navigate("/errornotfound");
+        });
+  },[])
   const handle_logout = () => {
     setoff(true);
     let res = axios
@@ -92,7 +106,7 @@ const Sidebar = () => {
             <span className="text-[18px]">friends</span>
           </li>
           <li
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/profile/")}
             className="flex items-center gap-[14px] cursor-pointer"
           >
             <span className="text-[24px]">

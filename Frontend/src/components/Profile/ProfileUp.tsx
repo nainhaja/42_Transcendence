@@ -35,6 +35,7 @@ const ProfileUp = () => {
   const [fullname, getFullname] = useState("");
   const [isLogged, setisLogged] = useState("");
 
+
   const game_socket = useContext(game_socket_context);
   const [len, setLen] = useState(0);
   
@@ -118,6 +119,7 @@ const ProfileUp = () => {
         //console.log(`${shkon} || ${res.data.username}`)
         if (shkon == res.data.username) {
           itsme(false)
+          //itsmee(res.data.userame);
           // window.alert("HAHWA;;hD DdKHDFLP L;FALSE "); 
         }
         else
@@ -162,9 +164,11 @@ const ProfileUp = () => {
   }, [location])
 
   useEffect(() => {
+
     axios.get(url, {withCredentials: true})
     .then((response) =>{
         console.log("nigga" + response.status)
+        
         SetUser(response.data);
       }).catch(error => 
         {  

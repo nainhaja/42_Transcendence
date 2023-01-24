@@ -202,10 +202,11 @@ function App() {
 
           </Route>
         </Route>
+        <Route path="/login" element={<Login />} />
         <Route element={<NotRequireAuth />}>
           <Route path="/" element={<Dashboard />}>
             <Route path="/verify_2fa/:userId" element={<Verify_2fa />} />
-            <Route path="/login" element={<Login />} />
+           
           </Route>
           <Route path="/errornotfound" element={<Nofriendpage />} />
         </Route>

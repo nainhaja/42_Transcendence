@@ -172,12 +172,14 @@ class Game {
             this.winner_name = this.users_names[0];
             this.update_status("endGame");
             clearInterval(this.game_initializer);
+            this.server.to(this.room).emit("It_ended");
         }
         else if (this.scores[1] === this.score_limit) {
             this.winner = this.users[1];
             this.winner_name = this.users_names[1];
             this.update_status("endGame");
             clearInterval(this.game_initializer);
+            this.server.to(this.room).emit("It_ended");
         }
     }
     ball_collision_with_screen() {
@@ -531,7 +533,8 @@ let AppGateway = class AppGateway {
             const gameox = await this.prismaService.game.findUnique({
                 where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0]) }
             });
-            if (gameox.status !== client_1.StatusGame.FINISHED) {
+            if (gameox.status !== client_1.StatusGame.FINISHED &&
+                this.GameMode[user_mode].queues[user_id].state !== "ended") {
                 const updatedGame = await this.prismaService.game.update({
                     where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0]) },
                     data: { user1_score: this.GameMode[user_mode].queues[user_id].scores[0],
@@ -552,7 +555,7 @@ let AppGateway = class AppGateway {
                 this.GameMode[user_mode].queues[user_id].emit_and_clear();
                 for (let i = 0; i < this.GameMode[user_mode].queues[user_id].players.length; i++)
                     this.socket_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].players[i]);
-                if (this.GameMode[user_mode].queues[user_id].scores[0] === 2) {
+                if (this.GameMode[user_mode].queues[user_id].scores[0] === this.GameMode[user_mode].queues[user_id].score_limit) {
                     await this.prismaService.user.update({
                         where: { id: user1.id },
                         data: {
@@ -570,7 +573,7 @@ let AppGateway = class AppGateway {
                         }
                     });
                 }
-                else if (this.GameMode[user_mode].queues[user_id].scores[1] === 2) {
+                else if (this.GameMode[user_mode].queues[user_id].scores[1] === this.GameMode[user_mode].queues[user_id].score_limit) {
                     await this.prismaService.user.update({
                         where: { id: user2.id },
                         data: {
@@ -675,7 +678,6 @@ let AppGateway = class AppGateway {
                 let nadi = 0;
                 if (payload.state !== 0) {
                     if (payload.state === 1) {
-                        console.log("|ansift invite l | : " + payload.player);
                         if (size === 0) {
                             this.GameMode[i].queues.push(new Game(this.server));
                             this.GameMode[i].queues[0].update_room(room_id);
@@ -692,17 +694,13 @@ let AppGateway = class AppGateway {
                         }
                     }
                     else if (payload.state === 2) {
-                        console.log("|Anreceive invite ana | :" + user.id);
                         if ((size - 1) === 0) {
-                            console.log("Looping 3la : " + this.GameMode[i].queues[0].users[1] + "|" + user.id);
                             socket.join(this.GameMode[i].queues[0].room);
                         }
                         else {
                             for (let x = size - 1; x > 0; x--) {
-                                console.log("Looping 3la : " + this.GameMode[i].queues[x].users[1] + "|" + user.id);
                                 if (this.GameMode[i].queues[x].users[1] === user.id) {
                                     socket.join(this.GameMode[i].queues[x].room);
-                                    console.log("|reached the room|");
                                 }
                             }
                         }
@@ -715,8 +713,6 @@ let AppGateway = class AppGateway {
                     this.socket_with_queue_id.set(socket.id, size - 1);
                     this.user_with_queue_id.set(user.id, size - 1);
                     this.user_with_queue_mode.set(user.id, i);
-                    await this.edit_user_status(this.GameMode[i].queues[size - 1].users[0], "INGAME");
-                    await this.edit_user_status(this.GameMode[i].queues[size - 1].users[1], "INGAME");
                     if (payload.state === 1)
                         this.GameMode[i].queues[size - 1].users.push(payload.player);
                 }
@@ -731,7 +727,6 @@ let AppGateway = class AppGateway {
                     }
                 }
                 else if (this.GameMode[i].queues[size - 1].users_names.length === 2 && payload.state === 2) {
-                    console.log("Here tani");
                     const game_modes = ["MODE1", "MODE2", "MODE3", "MODE2"];
                     const game = await this.prismaService.game.create({
                         data: {
@@ -763,7 +758,6 @@ let AppGateway = class AppGateway {
             const room_id = user.id;
             let i = payload.mode - 1;
             if (!this.user_with_queue_id.has(user.id) && payload.state === 1) {
-                console.log("Ya zebi");
                 this.getUserFromSocket(socket);
                 let size = this.GameMode[payload.mode - 1].queues.length;
                 await this.edit_user_status(user.id, user_status);
@@ -774,9 +768,8 @@ let AppGateway = class AppGateway {
                     size = 1;
                 }
                 else if (this.GameMode[i].queues[size - 1].state === "ended") {
-                    console.log("Wselt hna");
                     this.GameMode[i].queues.push(new Game(this.server));
-                    size = this.GameMode[payload.mode - 1].queues.length;
+                    size = this.GameMode[i].queues.length;
                     this.GameMode[i].queues[size - 1].update_room(room_id);
                     socket.join(room_id);
                 }
@@ -816,7 +809,6 @@ let AppGateway = class AppGateway {
                 }
             }
             else if (this.user_with_queue_id.has(user.id)) {
-                console.log("Ha hna bdina f qwada");
                 const user_id = this.user_with_queue_id.get(user.id);
                 const us_mode = this.user_with_queue_mode.get(user.id);
                 this.GameMode[us_mode].queues[user_id].players.push(socket.id);
@@ -845,8 +837,20 @@ let AppGateway = class AppGateway {
             else {
                 if (user) {
                     const user1_id = this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0]);
+                    const games = await this.prismaService.game.findMany({
+                        where: {
+                            OR: [
+                                { user1: { id: this.GameMode[user_mode].queues[user_id].users[0] } },
+                                { user2: { id: this.GameMode[user_mode].queues[user_id].users[1] } }
+                            ]
+                        },
+                        take: 1,
+                        orderBy: {
+                            id: 'desc'
+                        },
+                    });
                     const updatedGame = await this.prismaService.game.update({
-                        where: { id: user1_id },
+                        where: { id: games[0].id },
                         data: { user1_score: this.GameMode[user_mode].queues[user_id].scores[0],
                             user2_score: this.GameMode[user_mode].queues[user_id].scores[1] }
                     });

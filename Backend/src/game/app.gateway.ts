@@ -232,7 +232,7 @@ class Game {
   {
     if (this.players.length === 2) 
     {
-      ////console.log("players are ready");
+      //////console.log("players are ready");
       this.update_status("matched");
       this.server.to(this.room).emit("queue_status", this.queue_status());
       this.starting_queue();  
@@ -329,7 +329,7 @@ class Game {
     {
       this.ball_x = this.width / 10;
       this.ball_y = this.height / 5;
-      //console.log("player1 trying to start");
+      ////console.log("player1 trying to start");
       this.ball_direction_x *= -1;
     }
     else if(id === this.players[1])
@@ -337,7 +337,7 @@ class Game {
       this.ball_x = this.width *  (9 / 10) ;
       this.ball_y = this.height / 5;
       this.ball_direction_x *= -1;
-      //console.log("player2 trying to start");
+      ////console.log("player2 trying to start");
     }
     this.starting_queue();
     this.update_status("play");
@@ -349,16 +349,16 @@ class Game {
     if(this.ball_x > this.sec_paddle_x)
     {
         this.scores[0]++;
-        //console.log("scored1");
+        ////console.log("scored1");
         this.update_status("scored");
-        //console.log("players are "+this.players.length)
+        ////console.log("players are "+this.players.length)
         this.lastscored = this.players[0];
         this.ball_direction_x *= -1;
         clearInterval(this.game_initializer);
     }
     else if (this.ball_x < this.fr_paddle_x + this.paddle_width)
     {
-      //console.log("scored2");
+      ////console.log("scored2");
         this.scores[1]++;
         this.update_status("scored");
         this.lastscored = this.players[1];
@@ -371,14 +371,18 @@ class Game {
       this.winner = this.users[0];
       this.winner_name = this.users_names[0];
       this.update_status("endGame");
+      
       clearInterval(this.game_initializer);
+      this.server.to(this.room).emit("It_ended");
     }
     else if (this.scores[1] === this.score_limit)
     {
       this.winner = this.users[1];
       this.winner_name = this.users_names[1];
       this.update_status("endGame");
+      
       clearInterval(this.game_initializer);
+      this.server.to(this.room).emit("It_ended");
     }
   }
 
@@ -394,7 +398,7 @@ class Game {
     else if (this.ball_y - (this.ball_radius / 2) <= 0)
       this.ball_direction_y *= -1;
 
-    ////console.log("my hieght is " + this.height);
+    //////console.log("my hieght is " + this.height);
   }
   
   ball_collision_with_paddles() 
@@ -459,7 +463,7 @@ class Game {
 
   player_activity(payload: player_properties) 
   {
-    ////console.log("INut is "+payload.input)
+    //////console.log("INut is "+payload.input)
 
 
 
@@ -551,14 +555,17 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         this.GameMode[i] = new mode_du_game();
         this.GameMode[i].queues = new Array<Game>();
       }
-      //console.log("HEre vbyddt here ");
+      ////console.log("HEre vbyddt here ");
     }
   }
 
   async handleConnection(client: Socket, payload: any) 
   {
     
+    
     //this.GameMode.push(new Array<Game>());
+
+
     const user = await this.getUserFromSocket(client);
     const user_status : UserStatus = "ON";
     const off_status : UserStatus = "OFF";
@@ -567,13 +574,13 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       const game_history = await this.prismaService.game.findMany({
         where: {user1_id: user.id}
       })
-      //console.log("Number of games for user is "+game_history.length);      
-      //console.log("HAna hbiba"+user.username);
+      ////console.log("Number of games for user is "+game_history.length);      
+      ////console.log("HAna hbiba"+user.username);
       // if (!this.user_with_queue_id.get(user.id) && user.status !== UserStatus.INQUEUE)
       //   await this.edit_user_status(user.id, user_status);     
     }
 
-    ////console.log("New status after connecting is "+ await this.get_user_status(user.id));
+    //////console.log("New status after connecting is "+ await this.get_user_status(user.id));
 
     //this.logger.log(`User with the id  ${client.id} just logged in`);
   }
@@ -586,7 +593,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     
     // if (user)
     // {
-    //   //console.log("WSELT HNA HABIBBI "+user.username);
+    //   ////console.log("WSELT HNA HABIBBI "+user.username);
     //   const user_id: number = this.user_with_queue_id.get(user.id);
     //   const q_mode: number = this.user_with_queue_mode.get(user.id);
     //   const user_status : UserStatus = "INQUEUE";
@@ -603,19 +610,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     //     this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[player_id].users[0]);
     //     this.user_with_queue_mode.delete(this.GameMode[q_mode].queues[player_id].users[1]);
     //     this.GameMode[q_mode].queues[player_id].remove_player();
-    //     // //console.log("NUmber of players is "+this.queues[player_id].player_ids().length);
+    //     // ////console.log("NUmber of players is "+this.queues[player_id].player_ids().length);
         
     //     //this.queues[player_id].players.splice(user_id, 1);
 
     //     //this.queues[player_id].players.splice(user.id, 1);
     //     //if (await this.get_user_status(user.id) === user_status)
     //     await this.edit_user_status(user.id, off_status);
-    //   // //console.log("New status before discornecting is "+ await this.get_user_status(user.id));
+    //   // ////console.log("New status before discornecting is "+ await this.get_user_status(user.id));
     //   }      
     // }
 
     // await this.edit_user_status(user.id, off_status);
-    // //console.log("New status before discornecting is "+ await this.get_user_status(user.id));
+    // ////console.log("New status before discornecting is "+ await this.get_user_status(user.id));
     // else 
     //   this.logger.log(`User with the id  ${player_ref.id} wasn't involved in any game`);
   }
@@ -697,7 +704,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     
     if (user)
     {
-      //console.log("WSELT HNA HABIBBI "+user.username);
+      ////console.log("WSELT HNA HABIBBI "+user.username);
       const user_id: number = this.user_with_queue_id.get(user.id);
       const q_mode: number = this.user_with_queue_mode.get(user.id);
       const user_status : UserStatus = "INQUEUE";
@@ -775,7 +782,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         let game_len = this.GameMode[q_mode].queues[user_id].players.length
         // for(let i=0;i < game_len; i++)
         //   this.GameMode[q_mode].queues[user_id].remove_player();
-        // //console.log("NUmber of players is "+this.queues[player_id].player_ids().length);
+        // ////console.log("NUmber of players is "+this.queues[player_id].player_ids().length);
         
         //this.queues[player_id].players.splice(user_id, 1);
 
@@ -791,7 +798,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         {
           await this.edit_user_status(user.id, on_status);
         }
-      // //console.log("New status before discornecting is "+ await this.get_user_status(user.id));
+      // ////console.log("New status before discornecting is "+ await this.get_user_status(user.id));
     }  
   }
   
@@ -828,7 +835,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       }      
     }
     //socket.emit('gameCount', j);
-    ////console.log("array of spects is ", spect_array.length);
+    //////console.log("array of spects is ", spect_array.length);
     socket.emit('gameCount', spect_array);
   }
 
@@ -922,7 +929,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   @SubscribeMessage('GameEnded')
   async GameEnded(socket: Socket, payload: any)
   {
-   // //console.log("GAME ENDED INDEEEEED" + socket.id);
+    // 51  achrf 29 19 nizar 21 28
+   // ////console.log("GAME ENDED INDEEEEED" + socket.id);
     const user = await this.getUserFromSocket(socket);
     const user_id: number = this.user_with_queue_id.get(user.id);
     const user_mode:number =  this.user_with_queue_mode.get(user.id);
@@ -933,7 +941,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0])} 
         });
         
-        if (gameox.status !== StatusGame.FINISHED)
+        if (gameox.status !== StatusGame.FINISHED && 
+          this.GameMode[user_mode].queues[user_id].state !== "ended"
+          )
         {
           const updatedGame = await this.prismaService.game.update({
             where: { id: this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0])},
@@ -959,8 +969,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           for(let i=0;i < this.GameMode[user_mode].queues[user_id].players.length; i++)
             this.socket_with_queue_id.delete(this.GameMode[user_mode].queues[user_id].players[i]);
 
-          if (this.GameMode[user_mode].queues[user_id].scores[0] === 2)
+          if (this.GameMode[user_mode].queues[user_id].scores[0] === this.GameMode[user_mode].queues[user_id].score_limit)
           {
+            //console.log("ZAAABIBO1");
               await this.prismaService.user.update({
                 where: {id: user1.id },
                 data: {
@@ -979,8 +990,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
                 }
               });
           } 
-          else if (this.GameMode[user_mode].queues[user_id].scores[1] === 2)
+          else if (this.GameMode[user_mode].queues[user_id].scores[1] === this.GameMode[user_mode].queues[user_id].score_limit)
           {
+            //console.log("ZAAABIBO2");
               await this.prismaService.user.update({
                 where: {id: user2.id },
                 data: {
@@ -1001,6 +1013,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
           }
           else
           {
+            //console.log("ZAAABIBO3");
             if (user1.id === user.id)
             {
               await this.prismaService.user.update({
@@ -1082,11 +1095,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     
     if (user)
     {
-      //console.log("wselt "+user.username);
+      ////console.log("wselt "+user.username);
       const game_history = await this.prismaService.game.findMany({
         where: {user1_id: user.id}
       })
-      //console.log("Number of games for user is "+game_history.length);      
+      ////console.log("Number of games for user is "+game_history.length);      
     }
   }
 
@@ -1113,21 +1126,21 @@ async invite_qu(socket: Socket, payload: any)
 
     if (!this.user_with_queue_id.has(user.id) && payload.state !== 3 )
     {
-      //console.log("Here  "+user.username);
-      ////console.log("HEre tani "+payload.mode)
+      ////console.log("Here  "+user.username);
+      //////console.log("HEre tani "+payload.mode)
       //
       this.getUserFromSocket(socket);
       let size: number = this.GameMode[payload.mode-1].queues.length; 
         let nadi = 0;
-        //console.log("Xddd"+size+user.status)
+        ////console.log("Xddd"+size+user.status)
         if (payload.state !== 0)
         {
             if (payload.state === 1)
             {
-              console.log("|ansift invite l | : "+payload.player);
+              //console.log("|ansift invite l | : "+payload.player);
               if (size === 0)
               {
-                //console.log("zabi nta li baqi lia");
+                ////console.log("zabi nta li baqi lia");
                 this.GameMode[i].queues.push(new Game(this.server));
                 this.GameMode[i].queues[0].update_room(room_id);
                 socket.join(room_id);
@@ -1145,10 +1158,10 @@ async invite_qu(socket: Socket, payload: any)
             }
             else if (payload.state === 2)
             {
-              console.log("|Anreceive invite ana | :"+user.id);
+              //console.log("|Anreceive invite ana | :"+user.id);
               if ((size - 1) === 0)
               {
-                console.log("Looping 3la : "+this.GameMode[i].queues[0].users[1]+"|"+user.id);
+                //console.log("Looping 3la : "+this.GameMode[i].queues[0].users[1]+"|"+user.id);
                 socket.join(this.GameMode[i].queues[0].room);
               }
                 
@@ -1156,11 +1169,11 @@ async invite_qu(socket: Socket, payload: any)
               {
                 for(let x = size-1; x > 0 ;x--)
                 {
-                  console.log("Looping 3la : "+this.GameMode[i].queues[x].users[1]+"|"+user.id);
+                  //console.log("Looping 3la : "+this.GameMode[i].queues[x].users[1]+"|"+user.id);
                   if (this.GameMode[i].queues[x].users[1] === user.id)
                   {
                     socket.join(this.GameMode[i].queues[x].room);
-                    console.log("|reached the room|");
+                    //console.log("|reached the room|");
                     
                   }
                 } 
@@ -1180,8 +1193,8 @@ async invite_qu(socket: Socket, payload: any)
             this.user_with_queue_id.set(user.id, size - 1);
             this.user_with_queue_mode.set(user.id, i); 
             
-            await this.edit_user_status(this.GameMode[i].queues[size - 1].users[0], "INGAME");
-            await this.edit_user_status(this.GameMode[i].queues[size - 1].users[1], "INGAME");
+            // await this.edit_user_status(this.GameMode[i].queues[size - 1].users[0], "INGAME");
+            // await this.edit_user_status(this.GameMode[i].queues[size - 1].users[1], "INGAME");
 
             if (payload.state === 1)
               this.GameMode[i].queues[size - 1].users.push(payload.player)
@@ -1189,7 +1202,7 @@ async invite_qu(socket: Socket, payload: any)
         }
           if (payload.state === 0)
           {
-            //console.log("Zabi ?");
+            ////console.log("Zabi ?");
             if (this.GameMode[i].queues.length > 0)
             {
               this.GameMode[i].queues[size - 1].update_status("decline");
@@ -1205,9 +1218,9 @@ async invite_qu(socket: Socket, payload: any)
           }
           else if (this.GameMode[i].queues[size - 1].users_names.length === 2 && payload.state === 2)
           {
-            console.log("Here tani");
+            //console.log("Here tani");
             const game_modes: any[] = ["MODE1", "MODE2", "MODE3", "MODE2"]; 
-            //console.log("Ha mode diali "+game_modes[i]);
+            ////console.log("Ha mode diali "+game_modes[i]);
             const game = await this.prismaService.game.create({
               data: {
                 user1: { connect: { id: this.GameMode[i].queues[size - 1].users[0] } },
@@ -1249,15 +1262,15 @@ async joinRoom(socket: Socket, payload: any)
 
   if (user)
   {
-    ////console.log("My user is " + user.username);
+    //////console.log("My user is " + user.username);
     const room_id: string = user.id;
     let i:number = payload.mode - 1;
    
     if (!this.user_with_queue_id.has(user.id) && payload.state === 1)
     {
-      console.log("Ya zebi");
-      //console.log("Here  "+user.username);
-      ////console.log("HEre tani "+payload.mode)
+      //console.log("Ya zebi");
+      ////console.log("Here  "+user.username);
+      //////console.log("HEre tani "+payload.mode)
       //
       this.getUserFromSocket(socket);
       let size: number = this.GameMode[payload.mode-1].queues.length;
@@ -1272,9 +1285,9 @@ async joinRoom(socket: Socket, payload: any)
         } 
         else if (this.GameMode[i].queues[size - 1].state === "ended")
         {
-          console.log("Wselt hna");
+          //console.log("Wselt hna");
           this.GameMode[i].queues.push(new Game(this.server));
-          size = this.GameMode[payload.mode-1].queues.length;
+          size = this.GameMode[i].queues.length;
           this.GameMode[i].queues[size - 1].update_room(room_id);
           socket.join(room_id); 
         }
@@ -1288,7 +1301,7 @@ async joinRoom(socket: Socket, payload: any)
 
         else if (this.GameMode[i].queues[size - 1].users.length === 1)
         {
-          //console.log("Wselt ta hna");
+          ////console.log("Wselt ta hna");
           socket.join(this.GameMode[i].queues[size - 1].room); 
           this.cpt++;
         }
@@ -1325,7 +1338,7 @@ async joinRoom(socket: Socket, payload: any)
     
     else if (this.user_with_queue_id.has(user.id))
     {
-      console.log("Ha hna bdina f qwada");
+      //console.log("Ha hna bdina f qwada");
       const user_id: number = this.user_with_queue_id.get(user.id);
       const us_mode: number = this.user_with_queue_mode.get(user.id);
 
@@ -1365,8 +1378,22 @@ async joinRoom(socket: Socket, payload: any)
         {
             const user1_id : number = this.user_with_game_id.get(this.GameMode[user_mode].queues[user_id].users[0]);
             
+
+        const games = await this.prismaService.game.findMany({
+            where: {
+              OR: [
+                { user1: { id: this.GameMode[user_mode].queues[user_id].users[0] } },
+                { user2: { id: this.GameMode[user_mode].queues[user_id].users[1] } }
+              ]
+            },
+            take: 1,
+            orderBy: {
+              id: 'desc'
+            },
+          });
+
             const updatedGame = await this.prismaService.game.update({
-              where: { id: user1_id},
+              where: { id: games[0].id},
               data: { user1_score: this.GameMode[user_mode].queues[user_id].scores[0]
                 , user2_score: this.GameMode[user_mode].queues[user_id].scores[1]}
             });        
@@ -1381,7 +1408,7 @@ async joinRoom(socket: Socket, payload: any)
       this.GameMode[user_mode].queues[user_id].player_activity({ ...payload, id: user.id })
     }
     //else 
-      //console.log("SIR THAWA");
+      ////console.log("SIR THAWA");
     }
       
 
@@ -1396,7 +1423,7 @@ async joinRoom(socket: Socket, payload: any)
 					where: { id: payload.id },
           
 				});
-        ////console.log(user);
+        //////console.log(user);
 				return user;
 			}
 		}
